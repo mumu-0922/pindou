@@ -1,0 +1,22 @@
+[
+  {"code":"S01","name":"White","hex":"#FFFFFF"},
+  {"code":"S02","name":"Black","hex":"#1B1B1B"},
+  {"code":"S03","name":"Red","hex":"#E02020"},
+  {"code":"S04","name":"Orange","hex":"#FF7F00"},
+  {"code":"S05","name":"Yellow","hex":"#FFD700"},
+  {"code":"S06","name":"Green","hex":"#228B22"},
+  {"code":"S07","name":"Blue","hex":"#1E90FF"},
+  {"code":"S08","name":"Purple","hex":"#8A2BE2"},
+  {"code":"S09","name":"Pink","hex":"#FF69B4"},
+  {"code":"S10","name":"Brown","hex":"#8B4513"},
+  {"code":"S11","name":"Grey","hex":"#A9A9A9"},
+  {"code":"S12","name":"Light Grey","hex":"#D3D3D3"},
+  {"code":"S13","name":"Dark Blue","hex":"#00008B"},
+  {"code":"S14","name":"Sky Blue","hex":"#87CEEB"},
+  {"code":"S15","name":"Lime","hex":"#32CD32"},
+  {"code":"S16","name":"Dark Green","hex":"#006400"},
+  {"code":"S17","name":"Peach","hex":"#FFDAB9"},
+  {"code":"S18","name":"Coral","hex":"#FF7F50"},
+  {"code":"S19","name":"Lavender","hex":"#E6E6FA"},
+  {"code":"S20","name":"Cream","hex":"#FFFDD0"}
+]
