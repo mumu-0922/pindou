@@ -56,6 +56,37 @@ function SectionHeader({ title, open, onToggle }: { title: string; open: boolean
   );
 }
 
+function NumInput({ value, onChange, min = 1, max = 200, className }: {
+  value: number; onChange: (v: number) => void; min?: number; max?: number; className?: string;
+}) {
+  const [raw, setRaw] = useState(String(value));
+  // sync external changes
+  if (raw !== '' && Number(raw) !== value) {
+    // only sync if raw is a committed number (not empty / mid-edit)
+    if (raw !== '' && !isNaN(Number(raw)) && Number(raw) !== value) setRaw(String(value));
+  }
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={raw}
+      className={className}
+      onChange={e => {
+        const v = e.target.value.replace(/[^0-9]/g, '');
+        setRaw(v);
+        const n = parseInt(v, 10);
+        if (!isNaN(n) && n >= min && n <= max) onChange(n);
+      }}
+      onBlur={() => {
+        const n = parseInt(raw, 10);
+        if (isNaN(n) || n < min) { setRaw(String(min)); onChange(min); }
+        else if (n > max) { setRaw(String(max)); onChange(max); }
+        else setRaw(String(n));
+      }}
+    />
+  );
+}
+
 export default function ParameterPanel(props: Props) {
   const { t } = useI18n();
   const brands = getAvailableBrands();
@@ -130,13 +161,11 @@ export default function ParameterPanel(props: Props) {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
             <label className="flex flex-col gap-1.5">
               <span className={lbl}>{t('param.width')}</span>
-              <input type="number" min={1} max={200} value={props.width}
-                onChange={e => handleWidthChange(+e.target.value)} className={sel} />
+              <NumInput value={props.width} onChange={handleWidthChange} className={sel} />
             </label>
             <label className="flex flex-col gap-1.5">
               <span className={lbl}>{t('param.height')}</span>
-              <input type="number" min={1} max={200} value={props.height}
-                onChange={e => handleHeightChange(+e.target.value)} className={sel} />
+              <NumInput value={props.height} onChange={handleHeightChange} className={sel} />
             </label>
             <label className="flex items-center gap-2 cursor-pointer self-end pb-2">
               <input type="checkbox" checked={props.lockRatio} onChange={e => props.onLockRatioChange(e.target.checked)}
