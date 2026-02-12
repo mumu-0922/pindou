@@ -11,6 +11,7 @@ interface Props {
 export default function PatternPreview({ pattern, palette, onCellClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoom, setZoom] = useState(1);
+  const [showGrid, setShowGrid] = useState(true);
 
   useEffect(() => {
     if (!pattern || !canvasRef.current) return;
@@ -28,12 +29,14 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
         const color = colorMap.get(cell.colorId);
         ctx.fillStyle = color?.hex ?? '#FF00FF';
         ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        if (showGrid) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
       }
     }
-  }, [pattern, palette]);
+  }, [pattern, palette, showGrid]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!pattern || !onCellClick || !canvasRef.current) return;
@@ -46,16 +49,33 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
     }
   };
 
-  if (!pattern) return <div className="text-center text-gray-400 py-20">上传图片后生成图纸预览</div>;
+  if (!pattern) return (
+    <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-600">
+      <div className="text-5xl mb-3">🎨</div>
+      <p>上传图片后生成图纸预览</p>
+    </div>
+  );
+
+  const btn = 'px-2.5 py-1 rounded-lg text-sm font-medium transition-colors';
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="px-2 py-1 border rounded text-sm">-</button>
-        <span className="text-sm text-gray-500">{Math.round(zoom * 100)}%</span>
-        <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="px-2 py-1 border rounded text-sm">+</button>
+    <div className="space-y-3 p-4">
+      <div className="flex items-center gap-2 flex-wrap">
+        <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))}
+          className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>−</button>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-mono min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
+        <button onClick={() => setZoom(z => Math.min(4, z + 0.25))}
+          className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>+</button>
+        <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
+        <button onClick={() => setShowGrid(g => !g)}
+          className={`${btn} ${showGrid ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-gray-800'}`}>
+          {showGrid ? '▦ 网格' : '▢ 网格'}
+        </button>
+        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+          {pattern.metadata.width}×{pattern.metadata.height}
+        </span>
       </div>
-      <div className="overflow-auto border rounded-lg bg-white" style={{ maxHeight: '70vh' }}>
+      <div className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950" style={{ maxHeight: '70vh' }}>
         <canvas
           ref={canvasRef}
           onClick={handleClick}

@@ -378,5 +378,290 @@
     ],
     "source": "community-sourced",
     "license": "community"
+  },
+  {
+    "id": "artkal-s-S21",
+    "brand": "artkal-s",
+    "code": "S21",
+    "name": "Magenta",
+    "hex": "#FF00FF",
+    "rgb": [
+      255,
+      0,
+      255
+    ],
+    "lab": [
+      60.32,
+      98.23,
+      -60.82
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S22",
+    "brand": "artkal-s",
+    "code": "S22",
+    "name": "Teal",
+    "hex": "#008080",
+    "rgb": [
+      0,
+      128,
+      128
+    ],
+    "lab": [
+      48.25,
+      -28.85,
+      -8.48
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S23",
+    "brand": "artkal-s",
+    "code": "S23",
+    "name": "Olive",
+    "hex": "#808000",
+    "rgb": [
+      128,
+      128,
+      0
+    ],
+    "lab": [
+      51.87,
+      -12.93,
+      56.67
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S24",
+    "brand": "artkal-s",
+    "code": "S24",
+    "name": "Maroon",
+    "hex": "#800000",
+    "rgb": [
+      128,
+      0,
+      0
+    ],
+    "lab": [
+      25.54,
+      48.05,
+      38.06
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S25",
+    "brand": "artkal-s",
+    "code": "S25",
+    "name": "Navy",
+    "hex": "#000080",
+    "rgb": [
+      0,
+      0,
+      128
+    ],
+    "lab": [
+      12.97,
+      47.5,
+      -64.7
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S26",
+    "brand": "artkal-s",
+    "code": "S26",
+    "name": "Salmon",
+    "hex": "#FA8072",
+    "rgb": [
+      250,
+      128,
+      114
+    ],
+    "lab": [
+      67.26,
+      45.23,
+      29.09
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S27",
+    "brand": "artkal-s",
+    "code": "S27",
+    "name": "Mint",
+    "hex": "#98FF98",
+    "rgb": [
+      152,
+      255,
+      152
+    ],
+    "lab": [
+      91.89,
+      -49.98,
+      40.01
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S28",
+    "brand": "artkal-s",
+    "code": "S28",
+    "name": "Rose",
+    "hex": "#FF007F",
+    "rgb": [
+      255,
+      0,
+      127
+    ],
+    "lab": [
+      54.86,
+      84.46,
+      4.64
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S29",
+    "brand": "artkal-s",
+    "code": "S29",
+    "name": "Tan",
+    "hex": "#D2B48C",
+    "rgb": [
+      210,
+      180,
+      140
+    ],
+    "lab": [
+      74.98,
+      5.02,
+      24.43
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S30",
+    "brand": "artkal-s",
+    "code": "S30",
+    "name": "Charcoal",
+    "hex": "#36454F",
+    "rgb": [
+      54,
+      69,
+      79
+    ],
+    "lab": [
+      28.39,
+      -3.25,
+      -7.96
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S31",
+    "brand": "artkal-s",
+    "code": "S31",
+    "name": "Turquoise",
+    "hex": "#40E0D0",
+    "rgb": [
+      64,
+      224,
+      208
+    ],
+    "lab": [
+      81.26,
+      -44.08,
+      -4.03
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S32",
+    "brand": "artkal-s",
+    "code": "S32",
+    "name": "Gold",
+    "hex": "#FFD700",
+    "rgb": [
+      255,
+      215,
+      0
+    ],
+    "lab": [
+      86.93,
+      -1.92,
+      87.13
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S33",
+    "brand": "artkal-s",
+    "code": "S33",
+    "name": "Plum",
+    "hex": "#8E4585",
+    "rgb": [
+      142,
+      69,
+      133
+    ],
+    "lab": [
+      40.74,
+      39.98,
+      -22.18
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S34",
+    "brand": "artkal-s",
+    "code": "S34",
+    "name": "Rust",
+    "hex": "#B7410E",
+    "rgb": [
+      183,
+      65,
+      14
+    ],
+    "lab": [
+      44.06,
+      45.76,
+      51.12
+    ],
+    "source": "community-sourced",
+    "license": "community"
+  },
+  {
+    "id": "artkal-s-S35",
+    "brand": "artkal-s",
+    "code": "S35",
+    "name": "Ivory",
+    "hex": "#FFFFF0",
+    "rgb": [
+      255,
+      255,
+      240
+    ],
+    "lab": [
+      99.64,
+      -2.55,
+      7.16
+    ],
+    "source": "community-sourced",
+    "license": "community"
   }
 ]

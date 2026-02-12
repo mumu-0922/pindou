@@ -21,28 +21,30 @@ export default function BeadUsageList({ usage }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium">用量统计 ({totalBeads(usage)} 颗)</h3>
-        <button onClick={handleExportCsv} className="text-sm text-blue-600 hover:underline">导出 CSV</button>
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          用量统计 <span className="text-purple-600 dark:text-purple-400">({totalBeads(usage)} 颗)</span>
+        </h3>
+        <button onClick={handleExportCsv} className="text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium">导出 CSV</button>
       </div>
-      <div className="max-h-64 overflow-y-auto border rounded">
+      <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
             <tr>
-              <th className="text-left px-3 py-1.5">颜色</th>
-              <th className="text-left px-3 py-1.5">编号</th>
-              <th className="text-left px-3 py-1.5">名称</th>
-              <th className="text-right px-3 py-1.5">数量</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">颜色</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">编号</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">名称</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">数量</th>
             </tr>
           </thead>
           <tbody>
             {usage.map(u => (
-              <tr key={u.colorId} className="border-t hover:bg-gray-50">
+              <tr key={u.colorId} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <td className="px-3 py-1.5">
-                  <div className="w-5 h-5 rounded border" style={{ backgroundColor: u.color.hex }} />
+                  <div className="w-5 h-5 rounded border border-gray-200 dark:border-gray-600" style={{ backgroundColor: u.color.hex }} />
                 </td>
-                <td className="px-3 py-1.5 font-mono">{u.color.code}</td>
-                <td className="px-3 py-1.5">{u.color.name}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{u.count}</td>
+                <td className="px-3 py-1.5 font-mono text-xs">{u.color.code}</td>
+                <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{u.color.name}</td>
+                <td className="px-3 py-1.5 text-right font-mono text-xs font-semibold">{u.count}</td>
               </tr>
             ))}
           </tbody>
