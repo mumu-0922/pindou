@@ -16,20 +16,22 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
 
-  // Wheel zoom on the preview container
+  // Native wheel listener (must be non-passive to preventDefault)
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setZoom(z => {
+      const step = e.deltaY < 0 ? 0.15 : -0.15;
+      return Math.round(Math.max(0.1, Math.min(5, z + step)) * 100) / 100;
+    });
+  }, []);
+
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const handler = (e: WheelEvent) => {
-      e.preventDefault();
-      setZoom(z => {
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        return Math.round(Math.max(0.1, Math.min(5, z + delta)) * 100) / 100;
-      });
-    };
-    el.addEventListener('wheel', handler, { passive: false });
-    return () => el.removeEventListener('wheel', handler);
-  }, []);
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   useEffect(() => {
     if (!pattern || !canvasRef.current) return;
@@ -79,10 +81,10 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))}
+        <button onClick={() => setZoom(z => Math.max(0.1, +(z - 0.25).toFixed(2)))}
           className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>−</button>
         <span className="text-sm text-gray-500 dark:text-gray-400 font-mono min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
-        <button onClick={() => setZoom(z => Math.min(4, z + 0.25))}
+        <button onClick={() => setZoom(z => Math.min(5, +(z + 0.25).toFixed(2)))}
           className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>+</button>
         <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
         <button onClick={() => setShowGrid(g => !g)}
@@ -90,16 +92,22 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
           {showGrid ? '▦' : '▢'} {t('preview.grid')}
         </button>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-          {pattern.metadata.width}×{pattern.metadata.height}
+          {pattern.metadata.width}×{pattern.metadata.height} · 🖱️scroll
         </span>
       </div>
-      <div ref={wrapRef} className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950" style={{ maxHeight: '70vh' }}>
-        <canvas
-          ref={canvasRef}
-          onClick={handleClick}
-          className="cursor-crosshair"
-          style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-        />
+      <div
+        ref={wrapRef}
+        className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 cursor-zoom-in"
+        style={{ maxHeight: '70vh' }}
+      >
+        <div style={{ width: pattern.metadata.width * 20 * zoom, height: pattern.metadata.height * 20 * zoom }}>
+          <canvas
+            ref={canvasRef}
+            onClick={handleClick}
+            className="cursor-crosshair"
+            style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+          />
+        </div>
       </div>
     </div>
   );
