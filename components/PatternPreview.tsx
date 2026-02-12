@@ -12,26 +12,26 @@ interface Props {
 export default function PatternPreview({ pattern, palette, onCellClick }: Props) {
   const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
 
-  // Native wheel listener (must be non-passive to preventDefault)
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setZoom(z => {
-      const step = e.deltaY < 0 ? 0.15 : -0.15;
-      return Math.round(Math.max(0.1, Math.min(5, z + step)) * 100) / 100;
-    });
-  }, []);
-
-  useEffect(() => {
-    const el = wrapRef.current;
+  // Ref callback — attaches wheel listener when DOM mounts, cleans up on unmount
+  const wheelCleanup = useRef<(() => void) | null>(null);
+  const wrapRefCb = useCallback((el: HTMLDivElement | null) => {
+    // cleanup previous
+    if (wheelCleanup.current) { wheelCleanup.current(); wheelCleanup.current = null; }
     if (!el) return;
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, [handleWheel]);
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setZoom(z => {
+        const step = e.deltaY < 0 ? 0.15 : -0.15;
+        return Math.round(Math.max(0.1, Math.min(5, z + step)) * 100) / 100;
+      });
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    wheelCleanup.current = () => el.removeEventListener('wheel', handler);
+  }, []);
 
   useEffect(() => {
     if (!pattern || !canvasRef.current) return;
@@ -96,7 +96,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
         </span>
       </div>
       <div
-        ref={wrapRef}
+        ref={wrapRefCb}
         className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 cursor-zoom-in"
         style={{ maxHeight: '70vh' }}
       >
