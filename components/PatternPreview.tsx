@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { BeadPattern, CompiledBeadColor } from '@/lib/types/bead';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   pattern: BeadPattern | null;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function PatternPreview({ pattern, palette, onCellClick }: Props) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
@@ -52,7 +54,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   if (!pattern) return (
     <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-600">
       <div className="text-5xl mb-3">🎨</div>
-      <p>上传图片后生成图纸预览</p>
+      <p>{t('preview.empty')}</p>
     </div>
   );
 
@@ -69,7 +71,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
         <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
         <button onClick={() => setShowGrid(g => !g)}
           className={`${btn} ${showGrid ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-gray-800'}`}>
-          {showGrid ? '▦ 网格' : '▢ 网格'}
+          {showGrid ? '▦' : '▢'} {t('preview.grid')}
         </button>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
           {pattern.metadata.width}×{pattern.metadata.height}

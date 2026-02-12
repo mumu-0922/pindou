@@ -1,11 +1,13 @@
 'use client';
 import { useCallback, useState } from 'react';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   onImageSelected: (file: File) => void;
 }
 
 export default function ImageUploader({ onImageSelected }: Props) {
+  const { t } = useI18n();
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -32,8 +34,8 @@ export default function ImageUploader({ onImageSelected }: Props) {
       ) : (
         <div className="space-y-2">
           <div className="text-4xl">📷</div>
-          <p className="text-lg font-medium text-gray-600 dark:text-gray-300">拖拽图片到此处，或点击上传</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">支持 PNG / JPG / WebP</p>
+          <p className="text-lg font-medium text-gray-600 dark:text-gray-300">{t('upload.drag')}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{t('upload.formats')}</p>
         </div>
       )}
     </div>

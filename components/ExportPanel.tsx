@@ -2,6 +2,7 @@
 import type { BeadPattern, CompiledBeadColor } from '@/lib/types/bead';
 import { renderPatternToCanvas, canvasToBlob, downloadBlob } from '@/lib/export/png-exporter';
 import { exportPdf, downloadPdf } from '@/lib/export/pdf-exporter';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   pattern: BeadPattern | null;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ExportPanel({ pattern, palette }: Props) {
+  const { t } = useI18n();
   if (!pattern) return null;
 
   const fname = `bead-${pattern.metadata.brand}-${pattern.metadata.width}x${pattern.metadata.height}`;
@@ -28,7 +30,7 @@ export default function ExportPanel({ pattern, palette }: Props) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">导出图纸</h3>
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('export.title')}</h3>
       <div className="flex gap-3">
         <button onClick={handlePng}
           className={`${btn} bg-emerald-600 text-white hover:bg-emerald-700`}>

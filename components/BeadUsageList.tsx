@@ -1,12 +1,14 @@
 'use client';
 import type { BeadUsageItem } from '@/lib/types/bead';
 import { usageToCsv, totalBeads } from '@/lib/utils/usage-calculator';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   usage: BeadUsageItem[];
 }
 
 export default function BeadUsageList({ usage }: Props) {
+  const { t } = useI18n();
   if (!usage.length) return null;
 
   const handleExportCsv = () => {
@@ -22,18 +24,18 @@ export default function BeadUsageList({ usage }: Props) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          用量统计 <span className="text-purple-600 dark:text-purple-400">({totalBeads(usage)} 颗)</span>
+          {t('usage.title')} <span className="text-purple-600 dark:text-purple-400">({totalBeads(usage)} {t('usage.unit')})</span>
         </h3>
-        <button onClick={handleExportCsv} className="text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium">导出 CSV</button>
+        <button onClick={handleExportCsv} className="text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium">{t('usage.exportCsv')}</button>
       </div>
       <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
             <tr>
-              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">颜色</th>
-              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">编号</th>
-              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">名称</th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">数量</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('usage.color')}</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('usage.code')}</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('usage.name')}</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('usage.count')}</th>
             </tr>
           </thead>
           <tbody>

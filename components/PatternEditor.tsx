@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { BeadPattern, CompiledBeadColor, PatchOp } from '@/lib/types/bead';
 import { HistoryManager } from '@/lib/utils/history';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   pattern: BeadPattern;
@@ -12,10 +13,10 @@ interface Props {
 }
 
 export default function PatternEditor({ pattern, palette, history, selectedColorId, onPatternChange }: Props) {
+  const { t } = useI18n();
   const [replaceFrom, setReplaceFrom] = useState<string>('');
   const [replaceTo, setReplaceTo] = useState<string>('');
 
-  // 收集图纸中实际使用的颜色
   const usedIds = new Set<string>();
   for (const row of pattern.cells) for (const c of row) usedIds.add(c.colorId);
   const usedColors = palette.filter(c => usedIds.has(c.id));
@@ -57,22 +58,21 @@ export default function PatternEditor({ pattern, palette, history, selectedColor
       <div className="flex items-center gap-2 flex-wrap">
         <button onClick={handleUndo} disabled={!history.canUndo}
           className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>
-          ↩ 撤销
+          {t('editor.undo')}
         </button>
         <button onClick={handleRedo} disabled={!history.canRedo}
           className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>
-          ↪ 重做
+          {t('editor.redo')}
         </button>
-        <span className="text-xs text-gray-400 dark:text-gray-500">选择颜色后点击图纸编辑</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">{t('editor.hint')}</span>
       </div>
 
-      {/* 批量替换 */}
       <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">批量替换颜色</p>
+        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('editor.batchTitle')}</p>
         <div className="flex items-center gap-2 flex-wrap">
           <select value={replaceFrom} onChange={e => setReplaceFrom(e.target.value)}
             className="border rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 min-w-0 flex-1">
-            <option value="">替换源...</option>
+            <option value="">{t('editor.from')}</option>
             {usedColors.map(c => (
               <option key={c.id} value={c.id}>{c.code} {c.name}</option>
             ))}
@@ -80,7 +80,7 @@ export default function PatternEditor({ pattern, palette, history, selectedColor
           <span className="text-gray-400">→</span>
           <select value={replaceTo} onChange={e => setReplaceTo(e.target.value)}
             className="border rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 min-w-0 flex-1">
-            <option value="">目标色...</option>
+            <option value="">{t('editor.to')}</option>
             {palette.map(c => (
               <option key={c.id} value={c.id}>{c.code} {c.name}</option>
             ))}
@@ -88,7 +88,7 @@ export default function PatternEditor({ pattern, palette, history, selectedColor
           <button onClick={handleBatchReplace}
             disabled={!replaceFrom || !replaceTo || replaceFrom === replaceTo}
             className={`${btn} bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700`}>
-            替换全部
+            {t('editor.replaceAll')}
           </button>
         </div>
       </div>

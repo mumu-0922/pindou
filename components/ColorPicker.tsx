@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { CompiledBeadColor } from '@/lib/types/bead';
+import { useI18n } from '@/lib/i18n/context';
 
 interface Props {
   palette: CompiledBeadColor[];
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ColorPicker({ palette, selectedId, onSelect }: Props) {
+  const { t } = useI18n();
   const [search, setSearch] = useState('');
   const filtered = search
     ? palette.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()))
@@ -16,10 +18,10 @@ export default function ColorPicker({ palette, selectedId, onSelect }: Props) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">色板选择器</h3>
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('color.title')}</h3>
       <input
         type="text"
-        placeholder="搜索颜色名称或编号..."
+        placeholder={t('color.search')}
         value={search}
         onChange={e => setSearch(e.target.value)}
         className="w-full border rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-purple-500"
@@ -36,7 +38,7 @@ export default function ColorPicker({ palette, selectedId, onSelect }: Props) {
             style={{ backgroundColor: c.hex }}
           />
         ))}
-        {filtered.length === 0 && <p className="text-xs text-gray-400 py-2">无匹配颜色</p>}
+        {filtered.length === 0 && <p className="text-xs text-gray-400 py-2">{t('color.empty')}</p>}
       </div>
     </div>
   );
