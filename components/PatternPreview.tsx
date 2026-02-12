@@ -14,14 +14,15 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
+  const dragState = useRef<{ dragging: boolean; startX: number; startY: number; scrollX: number; scrollY: number; moved: boolean }>({ dragging: false, startX: 0, startY: 0, scrollX: 0, scrollY: 0, moved: false });
 
-  // Ref callback — attaches wheel listener when DOM mounts, cleans up on unmount
+  // Ref callback — wheel zoom + drag pan
   const wheelCleanup = useRef<(() => void) | null>(null);
   const wrapRefCb = useCallback((el: HTMLDivElement | null) => {
-    // cleanup previous
     if (wheelCleanup.current) { wheelCleanup.current(); wheelCleanup.current = null; }
     if (!el) return;
-    const handler = (e: WheelEvent) => {
+
+    const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setZoom(z => {
@@ -29,8 +30,40 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
         return Math.round(Math.max(0.1, Math.min(5, z + step)) * 100) / 100;
       });
     };
-    el.addEventListener('wheel', handler, { passive: false });
-    wheelCleanup.current = () => el.removeEventListener('wheel', handler);
+
+    const onMouseDown = (e: MouseEvent) => {
+      // left button only
+      if (e.button !== 0) return;
+      dragState.current = { dragging: true, startX: e.clientX, startY: e.clientY, scrollX: el.scrollLeft, scrollY: el.scrollTop, moved: false };
+      el.style.cursor = 'grabbing';
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const ds = dragState.current;
+      if (!ds.dragging) return;
+      const dx = e.clientX - ds.startX;
+      const dy = e.clientY - ds.startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ds.moved = true;
+      el.scrollLeft = ds.scrollX - dx;
+      el.scrollTop = ds.scrollY - dy;
+    };
+
+    const onMouseUp = () => {
+      dragState.current.dragging = false;
+      el.style.cursor = '';
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    wheelCleanup.current = () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
   }, []);
 
   useEffect(() => {
@@ -59,6 +92,8 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   }, [pattern, palette, showGrid]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Ignore click if user was dragging
+    if (dragState.current.moved) { dragState.current.moved = false; return; }
     if (!pattern || !onCellClick || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const cellSize = 20 * zoom;
@@ -92,19 +127,18 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
           {showGrid ? '▦' : '▢'} {t('preview.grid')}
         </button>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-          {pattern.metadata.width}×{pattern.metadata.height} · 🖱️scroll
+          {pattern.metadata.width}×{pattern.metadata.height} · 🖱️scroll · drag
         </span>
       </div>
       <div
         ref={wrapRefCb}
-        className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 cursor-zoom-in"
+        className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 cursor-grab select-none"
         style={{ maxHeight: '70vh' }}
       >
         <div style={{ width: pattern.metadata.width * 20 * zoom, height: pattern.metadata.height * 20 * zoom }}>
           <canvas
             ref={canvasRef}
             onClick={handleClick}
-            className="cursor-crosshair"
             style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
           />
         </div>
