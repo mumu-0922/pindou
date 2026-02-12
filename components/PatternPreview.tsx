@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { BeadPattern, CompiledBeadColor } from '@/lib/types/bead';
 import { useI18n } from '@/lib/i18n/context';
 
@@ -12,8 +12,24 @@ interface Props {
 export default function PatternPreview({ pattern, palette, onCellClick }: Props) {
   const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
+
+  // Wheel zoom on the preview container
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      setZoom(z => {
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        return Math.round(Math.max(0.1, Math.min(5, z + delta)) * 100) / 100;
+      });
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []);
 
   useEffect(() => {
     if (!pattern || !canvasRef.current) return;
@@ -77,7 +93,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
           {pattern.metadata.width}×{pattern.metadata.height}
         </span>
       </div>
-      <div className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950" style={{ maxHeight: '70vh' }}>
+      <div ref={wrapRef} className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950" style={{ maxHeight: '70vh' }}>
         <canvas
           ref={canvasRef}
           onClick={handleClick}
