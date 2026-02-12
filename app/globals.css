@@ -108,6 +108,31 @@ html { scroll-behavior: smooth; }
 .compare-slider .compare-overlay { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; }
 .compare-slider .compare-handle { position: absolute; top: 0; width: 3px; height: 100%; background: white; box-shadow: 0 0 8px rgba(0,0,0,0.4); }
 
+/* Range slider */
+.slider-track {
+  background: linear-gradient(to right, #d1d5db 0%, #d1d5db 100%);
+}
+.slider-track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.slider-track::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.dark .slider-track {
+  background: linear-gradient(to right, #374151 0%, #374151 100%);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

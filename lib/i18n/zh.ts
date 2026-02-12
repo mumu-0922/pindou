@@ -76,20 +76,46 @@ export const zh = {
   'footer.tagline': '拼豆图纸生成器',
   'footer.desc': 'CIEDE2000 感知色差匹配 · Perler / Hama / Artkal · 155色 · 开源免费',
 
-  // components
+  // upload
   'upload.drag': '拖拽图片到此处，或点击上传',
-  'upload.formats': '支持 PNG / JPG / WebP',
+  'upload.formats': '支持 PNG / JPG / WebP，最大 10MB',
+  'upload.change': '更换图片',
+  'upload.size': '原图尺寸',
+  'upload.fileSize': '文件大小',
+
+  // preview
   'preview.empty': '上传图片后生成图纸预览',
   'preview.grid': '网格',
+  'preview.codes': '色号',
+  'preview.boards': '拼板',
+
+  // params
   'param.brand': '品牌',
-  'param.width': '宽度',
-  'param.height': '高度',
-  'param.dithering': '抖动',
+  'param.width': '宽度（珠）',
+  'param.height': '高度（珠）',
+  'param.lock': '锁定比例',
+  'param.dithering': '抖动算法',
   'param.dithOff': '关闭',
   'param.background': '底色',
   'param.bgWhite': '白色',
   'param.bgBlack': '黑色',
   'param.bgTransparent': '透明',
+  'param.maxColors': '最大颜色数',
+  'param.maxColorsAll': '全部',
+  'param.brightness': '亮度',
+  'param.contrast': '对比度',
+  'param.saturation': '饱和度',
+  'param.reset': '重置',
+  'param.boardSize': '拼板尺寸',
+  'param.boardCount': '需要拼板',
+  'param.boardUnit': '块',
+  'param.totalBeads': '总珠数',
+  'param.colorCount': '使用颜色',
+  'param.sizeGroup': '尺寸设置',
+  'param.imageGroup': '图像调整',
+  'param.advancedGroup': '高级选项',
+
+  // editor
   'editor.undo': '↩ 撤销',
   'editor.redo': '↪ 重做',
   'editor.hint': '选择颜色后点击图纸编辑',
@@ -97,10 +123,16 @@ export const zh = {
   'editor.from': '替换源...',
   'editor.to': '目标色...',
   'editor.replaceAll': '替换全部',
+
+  // color picker
   'color.title': '色板选择器',
   'color.search': '搜索颜色名称或编号...',
   'color.empty': '无匹配颜色',
+
+  // export
   'export.title': '导出图纸',
+
+  // usage
   'usage.title': '用量统计',
   'usage.unit': '颗',
   'usage.exportCsv': '导出 CSV',

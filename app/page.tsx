@@ -6,6 +6,7 @@ import { loadImage, imageToPixels } from '@/lib/engine/image-loader';
 import { downscale } from '@/lib/engine/downscaler';
 import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
+import { adjustPixels } from '@/lib/engine/adjustments';
 import { loadPalette } from '@/lib/data/palettes/loader';
 import { calculateUsage } from '@/lib/utils/usage-calculator';
 import { HistoryManager } from '@/lib/utils/history';
@@ -26,6 +27,12 @@ export default function Home() {
   const [height, setHeight] = useState(29);
   const [dithering, setDithering] = useState<DitheringMode>('none');
   const [background, setBackground] = useState<BackgroundMode>('white');
+  const [brightness, setBrightness] = useState(0);
+  const [contrast, setContrast] = useState(0);
+  const [saturation, setSaturation] = useState(0);
+  const [maxColors, setMaxColors] = useState(0);
+  const [lockRatio, setLockRatio] = useState(true);
+  const [aspectRatio, setAspectRatio] = useState(1);
   const [pattern, setPattern] = useState<BeadPattern | null>(null);
   const [palette, setPalette] = useState<CompiledBeadColor[]>([]);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
@@ -43,6 +50,13 @@ export default function Home() {
     () => (pattern && palette.length ? calculateUsage(pattern, palette) : []),
     [pattern, palette]
   );
+
+  const colorCount = useMemo(() => {
+    if (!pattern) return 0;
+    const ids = new Set<string>();
+    for (const row of pattern.cells) for (const c of row) ids.add(c.colorId);
+    return ids.size;
+  }, [pattern]);
 
   const FEATURES = [
     { icon: '🎨', title: t('feat1.title'), desc: t('feat1.desc') },
@@ -73,21 +87,39 @@ export default function Home() {
     { q: t('faq5.q'), a: t('faq5.a') },
   ];
 
-  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode) => {
+  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number) => {
     setLoading(true);
     try {
-      const pal = await loadPalette(b);
-      setPalette(pal);
+      let pal = await loadPalette(b);
+
+      // maxColors: keep only the top N most-used colors after initial match
       const img = await loadImage(file);
       const loaded = imageToPixels(img, bg);
       const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h);
+
+      // Apply brightness/contrast/saturation
+      const adjusted = adjustPixels(pixels, bri, con, sat);
 
       const matchFn = (p: { r: number; g: number; b: number }) => {
         const c = matchColor(p, pal);
         return { r: c.rgb[0], g: c.rgb[1], b: c.rgb[2] };
       };
-      const dithered = applyDithering(pixels, w, h, dith, matchFn);
-      const matched = dith === 'none' ? matchColors(pixels, pal) : matchColors(dithered, pal);
+      const dithered = applyDithering(adjusted, w, h, dith, matchFn);
+      let matched = dith === 'none' ? matchColors(adjusted, pal) : matchColors(dithered, pal);
+
+      // Limit max colors
+      if (mc > 0 && mc < pal.length) {
+        const freq = new Map<string, number>();
+        for (const c of matched) freq.set(c.id, (freq.get(c.id) || 0) + 1);
+        const topIds = new Set(
+          [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, mc).map(e => e[0])
+        );
+        const limitedPal = pal.filter(c => topIds.has(c.id));
+        matched = dith === 'none' ? matchColors(adjusted, limitedPal) : matchColors(dithered, limitedPal);
+        pal = limitedPal;
+      }
+
+      setPalette(pal);
 
       const cells = Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
@@ -106,14 +138,23 @@ export default function Home() {
 
   const handleImageSelected = useCallback((file: File) => {
     setImageFile(file);
-    generate(file, brand, width, height, dithering, background);
-  }, [brand, width, height, dithering, background, generate]);
+    // Compute aspect ratio from image
+    const img = new Image();
+    img.onload = () => {
+      const ar = img.naturalWidth / img.naturalHeight;
+      setAspectRatio(ar);
+      const newH = Math.round(width / ar);
+      setHeight(Math.max(1, Math.min(200, newH)));
+      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors);
+    };
+    img.src = URL.createObjectURL(file);
+  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, generate]);
 
   // 参数变更自动重新生成
   useEffect(() => {
-    if (imageFile) generate(imageFile, brand, width, height, dithering, background);
+    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, width, height, dithering, background]);
+  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors]);
 
   const handleCellClick = useCallback((row: number, col: number) => {
     if (!pattern || !selectedColorId) return;
@@ -189,20 +230,40 @@ export default function Home() {
 
       {/* Tool Section */}
       <section id="tool" className={`py-16 px-6 ${dark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto space-y-6">
           <h2 className="text-3xl font-bold text-center">{t('tool.title')}</h2>
 
           <ImageUploader onImageSelected={handleImageSelected} />
 
           <ParameterPanel
             brand={brand} width={width} height={height} dithering={dithering} background={background}
+            brightness={brightness} contrast={contrast} saturation={saturation}
+            maxColors={maxColors} lockRatio={lockRatio} aspectRatio={aspectRatio}
             onBrandChange={setBrand} onWidthChange={setWidth} onHeightChange={setHeight}
             onDitheringChange={setDithering} onBackgroundChange={setBackground}
+            onBrightnessChange={setBrightness} onContrastChange={setContrast}
+            onSaturationChange={setSaturation} onMaxColorsChange={setMaxColors}
+            onLockRatioChange={setLockRatio}
           />
 
           {loading && (
             <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">
               <span className="animate-spin">⏳</span> {t('tool.generating')}
+            </div>
+          )}
+
+          {/* Stats ribbon */}
+          {pattern && (
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+                <span>🎨</span> <span>{t('param.colorCount')}: <b className="text-purple-600 dark:text-purple-400">{colorCount}</b></span>
+              </div>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+                <span>📐</span> <span>{width}×{height} = <b className="text-purple-600 dark:text-purple-400">{(width * height).toLocaleString()}</b> {t('usage.unit')}</span>
+              </div>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+                <span>🧩</span> <span>{t('param.boardCount')}: <b className="text-purple-600 dark:text-purple-400">{Math.ceil(width / 29) * Math.ceil(height / 29)}</b> {t('param.boardUnit')}</span>
+              </div>
             </div>
           )}
 
