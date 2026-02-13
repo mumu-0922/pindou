@@ -123,7 +123,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
           className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>+</button>
         <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
         <button onClick={() => setShowGrid(g => !g)}
-          className={`${btn} ${showGrid ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-gray-800'}`}>
+          className={`${btn} ${showGrid ? 'bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300' : 'bg-gray-100 dark:bg-gray-800'}`}>
           {showGrid ? '▦' : '▢'} {t('preview.grid')}
         </button>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">

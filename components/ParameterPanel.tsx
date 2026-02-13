@@ -195,8 +195,8 @@ export default function ParameterPanel(props: Props) {
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
             <span>{t('param.boardSize')}: {boardSize}×{boardSize}</span>
-            <span>{t('param.boardCount')}: <b className="text-purple-600 dark:text-purple-400">{boardCount}</b> {t('param.boardUnit')}</span>
-            <span>{t('param.totalBeads')}: <b className="text-purple-600 dark:text-purple-400">{totalBeads.toLocaleString()}</b></span>
+            <span>{t('param.boardCount')}: <b className="text-pink-500 dark:text-pink-400">{boardCount}</b> {t('param.boardUnit')}</span>
+            <span>{t('param.totalBeads')}: <b className="text-pink-500 dark:text-pink-400">{totalBeads.toLocaleString()}</b></span>
           </div>
         </div>
       )}
@@ -209,7 +209,7 @@ export default function ParameterPanel(props: Props) {
           <SliderRow label={t('param.contrast')} value={props.contrast} min={-50} max={50} onChange={props.onContrastChange} />
           <SliderRow label={t('param.saturation')} value={props.saturation} min={-50} max={50} onChange={props.onSaturationChange} />
           {(props.brightness !== 0 || props.contrast !== 0 || props.saturation !== 0) && (
-            <Button variant="link" size="sm" onClick={resetBCS} className="text-xs text-purple-600 dark:text-purple-400 p-0 h-auto">
+            <Button variant="link" size="sm" onClick={resetBCS} className="text-xs text-pink-500 dark:text-pink-400 p-0 h-auto">
               ↺ {t('param.reset')}
             </Button>
           )}

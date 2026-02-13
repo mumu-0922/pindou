@@ -51,9 +51,9 @@ export default function PaletteEditor({ palette, selectedIds, onApply, onClose }
           <div className="flex flex-wrap gap-1.5">
             {filtered.map(c => (
               <button key={c.id} title={`${c.code} - ${c.name}`} onClick={() => toggle(c.id)}
-                className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 relative ${ids.has(c.id) ? 'border-purple-500 ring-2 ring-purple-300 dark:ring-purple-700' : 'border-gray-300 dark:border-gray-600 opacity-40'}`}
+                className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 relative ${ids.has(c.id) ? 'border-pink-500 ring-2 ring-pink-300 dark:ring-pink-700' : 'border-gray-300 dark:border-gray-600 opacity-40'}`}
                 style={{ backgroundColor: c.hex }}>
-                {ids.has(c.id) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full text-white text-[8px] flex items-center justify-center">✓</span>}
+                {ids.has(c.id) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full text-white text-[8px] flex items-center justify-center">✓</span>}
               </button>
             ))}
           </div>

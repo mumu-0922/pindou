@@ -238,7 +238,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎨</span>
             <span className="font-bold text-lg">PinDou</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${dark ? 'bg-purple-900 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>{t('nav.colors')}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${dark ? 'bg-pink-900 text-pink-300' : 'bg-pink-100 text-pink-600'}`}>{t('nav.colors')}</span>
           </div>
           <div className="flex items-center gap-4">
             <a href="#tool" className="text-sm hover:underline">{t('nav.start')}</a>
@@ -268,7 +268,7 @@ export default function Home() {
             <span className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">{t('hero.local')}</span>
             <span className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">{t('hero.free')}</span>
           </div>
-          <a href="#tool" className="btn-glow inline-block mt-4 px-10 py-4 bg-white text-purple-700 font-bold rounded-full text-lg animate-fade-up-d3">
+          <a href="#tool" className="btn-glow inline-block mt-4 px-10 py-4 bg-white text-pink-600 font-bold rounded-full text-lg animate-fade-up-d3">
             {t('hero.cta')}
           </a>
         </div>
@@ -281,7 +281,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {STEPS.map(s => (
               <div key={s.num} className="text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-xl font-bold shadow-lg">{s.num}</div>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-500 text-white text-xl font-bold shadow-lg">{s.num}</div>
                 <h3 className="font-semibold text-lg">{s.title}</h3>
                 <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{s.desc}</p>
               </div>
@@ -314,7 +314,7 @@ export default function Home() {
                 🎨 {t('palette.edit')} {customIds ? `(${customIds.size}/${fullPalette.length})` : ''}
               </Button>
               {customIds && (
-                <Button variant="ghost" size="sm" className="text-xs text-purple-600 dark:text-purple-400" onClick={() => { setCustomIds(null); localStorage.removeItem(`pindou-custom-palette-${brand}`); }}>
+                <Button variant="ghost" size="sm" className="text-xs text-pink-500 dark:text-pink-400" onClick={() => { setCustomIds(null); localStorage.removeItem(`pindou-custom-palette-${brand}`); }}>
                   ↺ {t('param.reset')}
                 </Button>
               )}
@@ -331,7 +331,7 @@ export default function Home() {
           )}
 
           {loading && (
-            <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">
+            <div className="flex items-center gap-2 text-sm text-pink-500 dark:text-pink-400">
               <span className="animate-spin">⏳</span> {t('tool.generating')}
             </div>
           )}
@@ -344,7 +344,7 @@ export default function Home() {
                   localStorage.setItem('pindou-focus-data', JSON.stringify({ pattern, palette }));
                   window.location.href = '/focus';
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 text-white font-medium hover:bg-purple-700 transition text-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500 text-white font-medium hover:bg-pink-600 transition text-sm"
               >
                 {t('focus.enter')}
               </button>
@@ -353,13 +353,13 @@ export default function Home() {
           {pattern && (
             <div className="flex flex-wrap gap-4 text-sm">
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
-                <span>🎨</span> <span>{t('param.colorCount')}: <b className="text-purple-600 dark:text-purple-400">{colorCount}</b></span>
+                <span>🎨</span> <span>{t('param.colorCount')}: <b className="text-pink-500 dark:text-pink-400">{colorCount}</b></span>
               </div>
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
-                <span>📐</span> <span>{width}×{height} = <b className="text-purple-600 dark:text-purple-400">{(width * height).toLocaleString()}</b> {t('usage.unit')}</span>
+                <span>📐</span> <span>{width}×{height} = <b className="text-pink-500 dark:text-pink-400">{(width * height).toLocaleString()}</b> {t('usage.unit')}</span>
               </div>
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
-                <span>🧩</span> <span>{t('param.boardCount')}: <b className="text-purple-600 dark:text-purple-400">{Math.ceil(width / 29) * Math.ceil(height / 29)}</b> {t('param.boardUnit')}</span>
+                <span>🧩</span> <span>{t('param.boardCount')}: <b className="text-pink-500 dark:text-pink-400">{Math.ceil(width / 29) * Math.ceil(height / 29)}</b> {t('param.boardUnit')}</span>
               </div>
             </div>
           )}
@@ -417,7 +417,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {REVIEWS.map(r => (
               <div key={r.name} className={`card-premium p-6 ${dark ? 'bg-gray-900' : 'bg-white'}`}>
-                <div className="flex items-center gap-1 text-yellow-400 mb-3">{'★★★★★'}</div>
+                <div className="flex items-center gap-1 text-pink-400 mb-3">{'★★★★★'}</div>
                 <p className={`text-sm mb-4 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>&ldquo;{r.text}&rdquo;</p>
                 <div>
                   <div className="font-semibold text-sm">{r.name}</div>
@@ -454,7 +454,7 @@ export default function Home() {
       <section className="hero-gradient text-white py-20 px-6 text-center">
         <h2 className="text-4xl font-bold mb-4">{t('cta.title')}</h2>
         <p className="opacity-90 mb-8 text-lg">{t('cta.subtitle')}</p>
-        <a href="#tool" className="btn-glow inline-block px-10 py-4 bg-white text-purple-700 font-bold rounded-full text-lg">
+        <a href="#tool" className="btn-glow inline-block px-10 py-4 bg-white text-pink-600 font-bold rounded-full text-lg">
           {t('cta.btn')}
         </a>
       </section>

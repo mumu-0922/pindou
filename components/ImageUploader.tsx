@@ -69,8 +69,8 @@ export default function ImageUploader({ onImageSelected }: Props) {
         <div
           className={`p-10 text-center cursor-pointer transition-all border-2 border-dashed rounded-2xl m-1 ${
             dragOver
-              ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30'
-              : 'border-gray-300 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600'
+              ? 'border-pink-500 bg-pink-50 dark:bg-pink-950/30'
+              : 'border-gray-300 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600'
           }`}
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -78,7 +78,7 @@ export default function ImageUploader({ onImageSelected }: Props) {
           onClick={openPicker}
         >
           <div className="space-y-3">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/40 text-3xl">📷</div>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/40 text-3xl">📷</div>
             <p className="text-lg font-medium text-gray-600 dark:text-gray-300">{t('upload.drag')}</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">{t('upload.formats')}</p>
           </div>

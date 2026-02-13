@@ -21,9 +21,9 @@ export default function BeadUsageList({ usage }: Props) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          {t('usage.title')} <span className="text-purple-600 dark:text-purple-400">({totalBeads(usage)} {t('usage.unit')})</span>
+          {t('usage.title')} <span className="text-pink-500 dark:text-pink-400">({totalBeads(usage)} {t('usage.unit')})</span>
         </h3>
-        <Button variant="link" size="sm" onClick={handleExportCsv} className="text-xs text-purple-600 dark:text-purple-400 font-medium">{t('usage.exportCsv')}</Button>
+        <Button variant="link" size="sm" onClick={handleExportCsv} className="text-xs text-pink-500 dark:text-pink-400 font-medium">{t('usage.exportCsv')}</Button>
       </div>
       <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="w-full text-sm">

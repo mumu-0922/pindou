@@ -221,7 +221,7 @@ export default function FocusPage() {
       <div className={`min-h-screen flex items-center justify-center ${dark ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
         <div className="text-center space-y-4">
           <p className="text-lg">{t('focus.noData')}</p>
-          <a href="/" className="inline-block px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700">{t('focus.back')}</a>
+          <a href="/" className="inline-block px-6 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600">{t('focus.back')}</a>
         </div>
       </div>
     );
@@ -231,7 +231,7 @@ export default function FocusPage() {
     <div className={`min-h-screen flex ${dark ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
       {/* Sidebar */}
       <div className={`w-72 flex-shrink-0 border-r overflow-y-auto p-4 space-y-4 ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
-        <a href="/" className="text-sm text-purple-600 dark:text-purple-400 hover:underline">{t('focus.back')}</a>
+        <a href="/" className="text-sm text-pink-500 dark:text-pink-400 hover:underline">{t('focus.back')}</a>
         <h1 className="text-lg font-bold">{t('focus.title')}</h1>
 
         {/* Timer */}
@@ -239,7 +239,7 @@ export default function FocusPage() {
           <div className="text-xs text-gray-500 mb-1">{t('focus.timer')}</div>
           <div className="text-2xl font-mono font-bold">{formatTime(elapsed)}</div>
           <div className="flex gap-2 mt-2">
-            <button onClick={() => setRunning(r => !r)} className="text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700">
+            <button onClick={() => setRunning(r => !r)} className="text-xs px-3 py-1 rounded bg-pink-500 text-white hover:bg-pink-600">
               {running ? t('focus.pause') : t('focus.resume')}
             </button>
             <button onClick={() => { setElapsed(0); setRunning(true); }} className="text-xs px-3 py-1 rounded bg-gray-300 dark:bg-gray-700 hover:opacity-80">
@@ -255,7 +255,7 @@ export default function FocusPage() {
             <span>{totalDone}/{totalBeads} ({totalBeads > 0 ? Math.round(totalDone / totalBeads * 100) : 0}%)</span>
           </div>
           <div className={`h-2 rounded-full overflow-hidden ${dark ? 'bg-gray-800' : 'bg-gray-200'}`}>
-            <div className="h-full bg-purple-600 transition-all duration-300" style={{ width: `${totalBeads > 0 ? (totalDone / totalBeads * 100) : 0}%` }} />
+            <div className="h-full bg-pink-500 transition-all duration-300" style={{ width: `${totalBeads > 0 ? (totalDone / totalBeads * 100) : 0}%` }} />
           </div>
         </div>
 
@@ -266,14 +266,14 @@ export default function FocusPage() {
             <button key={color.id} onClick={() => setCurrentColorId(color.id)}
               className={`w-full flex items-center gap-2 p-2 rounded-lg text-left text-sm transition ${
                 color.id === currentColorId
-                  ? 'ring-2 ring-purple-500 ' + (dark ? 'bg-gray-800' : 'bg-purple-50')
+                  ? 'ring-2 ring-pink-500 ' + (dark ? 'bg-gray-800' : 'bg-pink-50')
                   : dark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
               } ${celebrating && color.id === currentColorId ? 'animate-celebrate' : ''}`}>
               <div className="w-6 h-6 rounded border flex-shrink-0" style={{ backgroundColor: color.hex, borderColor: dark ? '#555' : '#ccc' }} />
               <div className="flex-1 min-w-0">
                 <div className="truncate">{color.code}</div>
                 <div className={`h-1.5 rounded-full overflow-hidden mt-0.5 ${dark ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                  <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${total > 0 ? (done / total * 100) : 0}%` }} />
+                  <div className="h-full bg-emerald-400 transition-all duration-300" style={{ width: `${total > 0 ? (done / total * 100) : 0}%` }} />
                 </div>
               </div>
               <span className="text-xs text-gray-500 flex-shrink-0">{done}/{total}</span>
@@ -307,7 +307,7 @@ export default function FocusPage() {
               <h2 className="text-2xl font-bold mb-2">{t('focus.allDone')}</h2>
               <p className="text-gray-500 mb-2">{t('focus.allDoneDesc')}</p>
               <p className="text-lg font-mono font-bold mb-6">{t('focus.totalTime')}: {formatTime(elapsed)}</p>
-              <a href="/" className="inline-block px-8 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 font-bold">
+              <a href="/" className="inline-block px-8 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 font-bold">
                 {t('focus.back')}
               </a>
             </div>
