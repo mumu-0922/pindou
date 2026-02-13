@@ -15,7 +15,7 @@ export interface DownscaledPixel {
   r: number; g: number; b: number; // sRGB 0-255
 }
 
-export type PixelationMode = 'average' | 'dominant';
+export type PixelationMode = 'average' | 'dominant' | 'edge-aware';
 
 export function downscale(
   data: Uint8ClampedArray,
@@ -25,9 +25,9 @@ export function downscale(
   dstH: number,
   mode: PixelationMode = 'average'
 ): DownscaledPixel[] {
-  return mode === 'dominant'
-    ? downscaleDominant(data, srcW, srcH, dstW, dstH)
-    : downscaleAverage(data, srcW, srcH, dstW, dstH);
+  if (mode === 'dominant') return downscaleDominant(data, srcW, srcH, dstW, dstH);
+  if (mode === 'edge-aware') return downscaleEdgeAware(data, srcW, srcH, dstW, dstH);
+  return downscaleAverage(data, srcW, srcH, dstW, dstH);
 }
 
 function downscaleAverage(
@@ -113,5 +113,71 @@ function downscaleDominant(
       };
     }
   }
+  return result;
+}
+
+function downscaleEdgeAware(
+  data: Uint8ClampedArray,
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number
+): DownscaledPixel[] {
+  const result: DownscaledPixel[] = new Array(dstW * dstH);
+  const scaleX = srcW / dstW;
+  const scaleY = srcH / dstH;
+
+  const luminanceAt = (x: number, y: number): number => {
+    const i = (y * srcW + x) * 4;
+    return 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+  };
+
+  for (let dy = 0; dy < dstH; dy++) {
+    for (let dx = 0; dx < dstW; dx++) {
+      const sx0 = Math.floor(dx * scaleX);
+      const sy0 = Math.floor(dy * scaleY);
+      const sx1 = Math.min(Math.ceil((dx + 1) * scaleX), srcW);
+      const sy1 = Math.min(Math.ceil((dy + 1) * scaleY), srcH);
+
+      const cx = (sx0 + sx1 - 1) / 2;
+      const cy = (sy0 + sy1 - 1) / 2;
+      const rx = Math.max(1, (sx1 - sx0) / 2);
+      const ry = Math.max(1, (sy1 - sy0) / 2);
+
+      let linR = 0;
+      let linG = 0;
+      let linB = 0;
+      let weightSum = 0;
+
+      for (let sy = sy0; sy < sy1; sy++) {
+        for (let sx = sx0; sx < sx1; sx++) {
+          const i = (sy * srcW + sx) * 4;
+          const lum = luminanceAt(sx, sy);
+          const rightLum = luminanceAt(Math.min(sx + 1, srcW - 1), sy);
+          const bottomLum = luminanceAt(sx, Math.min(sy + 1, srcH - 1));
+          const edgeStrength = (Math.abs(lum - rightLum) + Math.abs(lum - bottomLum)) / 255;
+
+          const nx = (sx - cx) / rx;
+          const ny = (sy - cy) / ry;
+          const centerWeight = 1 + Math.max(0, 1 - (nx * nx + ny * ny)) * 0.35;
+          const edgeWeight = 1 + edgeStrength * 1.2;
+          const w = centerWeight * edgeWeight;
+
+          linR += srgbToLinear(data[i]) * w;
+          linG += srgbToLinear(data[i + 1]) * w;
+          linB += srgbToLinear(data[i + 2]) * w;
+          weightSum += w;
+        }
+      }
+
+      const inv = weightSum > 0 ? 1 / weightSum : 0;
+      result[dy * dstW + dx] = {
+        r: linearToSrgb(linR * inv),
+        g: linearToSrgb(linG * inv),
+        b: linearToSrgb(linB * inv),
+      };
+    }
+  }
+
   return result;
 }

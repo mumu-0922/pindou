@@ -24,6 +24,7 @@ interface Props {
   sharpness: number;
   maxColors: number;
   pixMode: PixelationMode;
+  lowResOptimize: boolean;
   lockRatio: boolean;
   aspectRatio: number;
   onBrandChange: (b: BeadBrand) => void;
@@ -37,6 +38,7 @@ interface Props {
   onSharpnessChange: (v: number) => void;
   onMaxColorsChange: (v: number) => void;
   onPixModeChange: (v: PixelationMode) => void;
+  onLowResOptimizeChange: (v: boolean) => void;
   onLockRatioChange: (v: boolean) => void;
 }
 
@@ -100,6 +102,7 @@ export default function ParameterPanel(props: Props) {
   const boardRows = Math.ceil(props.height / boardSize);
   const boardCount = boardCols * boardRows;
   const totalBeads = props.width * props.height;
+  const isSmallPattern = props.width <= 40 && props.height <= 40;
 
   const handleWidthChange = (w: number) => {
     props.onWidthChange(w);
@@ -142,14 +145,15 @@ export default function ParameterPanel(props: Props) {
         </div>
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs uppercase tracking-wide">{t('param.pixMode')}</Label>
-          <Select value={props.pixMode} onValueChange={v => props.onPixModeChange(v as PixelationMode)}>
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="average">{t('param.pixAverage')}</SelectItem>
-              <SelectItem value="dominant">{t('param.pixDominant')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <Select value={props.pixMode} onValueChange={v => props.onPixModeChange(v as PixelationMode)}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="average">{t('param.pixAverage')}</SelectItem>
+                <SelectItem value="dominant">{t('param.pixDominant')}</SelectItem>
+                <SelectItem value="edge-aware">{t('param.pixEdgeAware')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs uppercase tracking-wide">{t('param.dithering')}</Label>
           <Select value={props.dithering} onValueChange={v => props.onDitheringChange(v as DitheringMode)}>
@@ -213,6 +217,13 @@ export default function ParameterPanel(props: Props) {
       <SectionHeader icon="🎨" title={t('param.imageGroup')} open={openImage} onToggle={() => setOpenImage(!openImage)} />
       {openImage && (
         <div className="pb-3 border-b border-pink-100 dark:border-pink-900/30 space-y-3">
+          <div className="flex items-center justify-between rounded-xl border border-pink-100 bg-white/70 px-3 py-2 dark:border-pink-900/30 dark:bg-gray-900/60">
+            <Label htmlFor="low-res-opt" className="text-xs uppercase tracking-wide cursor-pointer">{t('param.lowResOptimize')}</Label>
+            <Switch id="low-res-opt" checked={props.lowResOptimize} onCheckedChange={props.onLowResOptimizeChange} />
+          </div>
+          {isSmallPattern && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">{t('param.lowResOptimizeHint')}</p>
+          )}
           <SliderRow label={t('param.brightness')} value={props.brightness} min={-50} max={50} onChange={props.onBrightnessChange} />
           <SliderRow label={t('param.contrast')} value={props.contrast} min={-50} max={50} onChange={props.onContrastChange} />
           <SliderRow label={t('param.saturation')} value={props.saturation} min={-50} max={50} onChange={props.onSaturationChange} />
@@ -222,7 +233,7 @@ export default function ParameterPanel(props: Props) {
               ↺ {t('param.reset')}
             </Button>
           )}
-          {props.width * props.height <= 35 * 35 && (
+          {isSmallPattern && (
             <p className="text-xs text-amber-600 dark:text-amber-400">{t('param.sharpnessHint')}</p>
           )}
         </div>

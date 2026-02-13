@@ -8,6 +8,7 @@ import type { PixelationMode } from '@/lib/engine/downscaler';
 import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
 import { adjustPixels, sharpenPixels, sharpenSource } from '@/lib/engine/adjustments';
+import { removeIsolatedNoise } from '@/lib/engine/pattern-cleanup';
 import { loadPalette } from '@/lib/data/palettes/loader';
 import { calculateUsage } from '@/lib/utils/usage-calculator';
 import { HistoryManager } from '@/lib/utils/history';
@@ -36,6 +37,7 @@ export default function Home() {
   const [sharpness, setSharpness] = useState(0);
   const [maxColors, setMaxColors] = useState(0);
   const [pixMode, setPixMode] = useState<PixelationMode>('average');
+  const [lowResOptimize, setLowResOptimize] = useState(false);
   const [lockRatio, setLockRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState(1);
   const [pattern, setPattern] = useState<BeadPattern | null>(null);
@@ -96,7 +98,22 @@ export default function Home() {
     { q: t('faq5.q'), a: t('faq5.a') },
   ];
 
-  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null, pm: PixelationMode = 'average', sharp: number = 0) => {
+  const generate = useCallback(async (
+    file: File,
+    b: BeadBrand,
+    w: number,
+    h: number,
+    dith: DitheringMode,
+    bg: BackgroundMode,
+    bri: number,
+    con: number,
+    sat: number,
+    mc: number,
+    cIds: Set<string> | null = null,
+    pm: PixelationMode = 'average',
+    sharp: number = 0,
+    lowResOpt: boolean = false,
+  ) => {
     const myId = ++genId.current;
     setLoading(true);
     try {
@@ -109,9 +126,14 @@ export default function Home() {
       // maxColors: keep only the top N most-used colors after initial match
       const img = await loadImage(file);
       if (myId !== genId.current) return;
+      const isSmallPattern = w <= 40 && h <= 40;
+      const useLowResOptimize = lowResOpt && isSmallPattern;
+      const effectivePixMode: PixelationMode = useLowResOptimize ? 'edge-aware' : pm;
+      const effectiveDithering: DitheringMode = useLowResOptimize ? 'none' : dith;
+      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(10, pal.length) : mc;
       const loaded = imageToPixels(img, bg);
       sharpenSource(loaded.data, loaded.width, loaded.height, sharp);
-      const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, pm);
+      const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, effectivePixMode);
 
       // Apply brightness/contrast/saturation + sharpening
       const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
@@ -120,25 +142,25 @@ export default function Home() {
         const c = matchColor(p, pal);
         return { r: c.rgb[0], g: c.rgb[1], b: c.rgb[2] };
       };
-      const dithered = applyDithering(adjusted, w, h, dith, matchFn);
-      let matched = dith === 'none' ? matchColors(adjusted, pal) : matchColors(dithered, pal);
+      const dithered = applyDithering(adjusted, w, h, effectiveDithering, matchFn);
+      let matched = effectiveDithering === 'none' ? matchColors(adjusted, pal) : matchColors(dithered, pal);
 
       // Limit max colors — re-dither with limited palette for clean blocks
-      if (mc > 0 && mc < pal.length) {
+      if (effectiveMaxColors > 0 && effectiveMaxColors < pal.length) {
         const freq = new Map<string, number>();
         for (const c of matched) freq.set(c.id, (freq.get(c.id) || 0) + 1);
         const topIds = new Set(
-          [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, mc).map(e => e[0])
+          [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, effectiveMaxColors).map(e => e[0])
         );
         const limitedPal = pal.filter(c => topIds.has(c.id));
-        if (dith === 'none') {
+        if (effectiveDithering === 'none') {
           matched = matchColors(adjusted, limitedPal);
         } else {
           const limitedMatchFn = (p: { r: number; g: number; b: number }) => {
             const c = matchColor(p, limitedPal);
             return { r: c.rgb[0], g: c.rgb[1], b: c.rgb[2] };
           };
-          matched = matchColors(applyDithering(adjusted, w, h, dith, limitedMatchFn), limitedPal);
+          matched = matchColors(applyDithering(adjusted, w, h, effectiveDithering, limitedMatchFn), limitedPal);
         }
         pal = limitedPal;
       }
@@ -146,13 +168,14 @@ export default function Home() {
       if (myId !== genId.current) return;
       setPalette(pal);
 
-      const cells = Array.from({ length: h }, (_, y) =>
+      const rawCells = Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
       );
+      const cells = useLowResOptimize ? removeIsolatedNoise(rawCells, w, h, 2) : rawCells;
 
       setPattern({
         version: 1,
-        metadata: { brand: b, width: w, height: h, dithering: dith, background: bg, createdAt: new Date().toISOString() },
+        metadata: { brand: b, width: w, height: h, dithering: effectiveDithering, background: bg, createdAt: new Date().toISOString() },
         cells,
       });
       history.clear();
@@ -171,16 +194,16 @@ export default function Home() {
       setAspectRatio(ar);
       const newH = Math.round(width / ar);
       setHeight(Math.max(1, Math.min(200, newH)));
-      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness);
+      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, lowResOptimize);
     };
     img.src = URL.createObjectURL(file);
-  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, generate]);
+  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, lowResOptimize, generate]);
 
   // 参数变更自动重新生成
   useEffect(() => {
-    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness);
+    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, lowResOptimize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness]);
+  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, lowResOptimize]);
 
   // 品牌切换时重置自定义色板
   useEffect(() => {
@@ -315,12 +338,14 @@ export default function Home() {
             brand={brand} width={width} height={height} dithering={dithering} background={background}
             brightness={brightness} contrast={contrast} saturation={saturation}
             maxColors={maxColors} pixMode={pixMode} lockRatio={lockRatio} aspectRatio={aspectRatio}
+            lowResOptimize={lowResOptimize}
             onBrandChange={setBrand} onWidthChange={setWidth} onHeightChange={setHeight}
             onDitheringChange={setDithering} onBackgroundChange={setBackground}
             onBrightnessChange={setBrightness} onContrastChange={setContrast}
             onSaturationChange={setSaturation} onMaxColorsChange={setMaxColors}
             onPixModeChange={setPixMode} onLockRatioChange={setLockRatio}
             sharpness={sharpness} onSharpnessChange={setSharpness}
+            onLowResOptimizeChange={setLowResOptimize}
           />
 
           {fullPalette.length > 0 && (

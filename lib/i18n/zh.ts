@@ -107,6 +107,8 @@ export const zh = {
   'param.saturation': '饱和度',
   'param.sharpness': '锐度',
   'param.sharpnessHint': '💡 小尺寸建议：提高对比度 +15~30，锐度 +30~60，颜色数 5~10',
+  'param.lowResOptimize': '低像素优化',
+  'param.lowResOptimizeHint': '≤40×40 建议开启：优先保留轮廓并自动清理孤立噪点',
   'param.reset': '重置',
   'param.boardSize': '拼板尺寸',
   'param.boardCount': '需要拼板',
@@ -146,6 +148,7 @@ export const zh = {
   'param.pixMode': '像素化模式',
   'param.pixAverage': '均值（写实）',
   'param.pixDominant': '主色（卡通）',
+  'param.pixEdgeAware': '边缘优先（清晰）',
   'editor.floodHint': 'Shift+点击：油漆桶填充',
 
   'palette.edit': '自定义色板',
