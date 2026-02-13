@@ -329,7 +329,20 @@ export default function Home() {
             </div>
           )}
 
-          {/* Stats ribbon */}
+          {/* Focus mode button + Stats ribbon */}
+          {pattern && (
+            <div className="flex flex-wrap gap-4 text-sm items-center">
+              <button
+                onClick={() => {
+                  localStorage.setItem('pindou-focus-data', JSON.stringify({ pattern, palette }));
+                  window.location.href = '/focus';
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 text-white font-medium hover:bg-purple-700 transition text-sm"
+              >
+                {t('focus.enter')}
+              </button>
+            </div>
+          )}
           {pattern && (
             <div className="flex flex-wrap gap-4 text-sm">
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>

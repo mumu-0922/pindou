@@ -161,6 +161,26 @@ export const zh = {
   'brand.manman': '漫漫',
   'brand.panpan': '盼盼',
   'brand.mixiaowo': '咪小窝',
+
+  // focus
+  'focus.enter': '🧩 进入拼装模式',
+  'focus.title': '专注拼装',
+  'focus.back': '← 返回生成器',
+  'focus.colors': '颜色列表',
+  'focus.current': '当前颜色',
+  'focus.progress': '总进度',
+  'focus.timer': '计时',
+  'focus.pause': '暂停',
+  'focus.resume': '继续',
+  'focus.reset': '重置计时',
+  'focus.completed': '已完成',
+  'focus.remaining': '剩余',
+  'focus.colorDone': '颜色完成！',
+  'focus.allDone': '🎉 全部完成！',
+  'focus.allDoneDesc': '恭喜你完成了整幅拼豆作品！',
+  'focus.totalTime': '总用时',
+  'focus.noData': '没有图纸数据，请先生成图纸',
+  'focus.clickHint': '点击当前颜色的区域标记为已完成',
 } as const;
 
 export type I18nKey = keyof typeof zh;

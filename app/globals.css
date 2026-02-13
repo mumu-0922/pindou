@@ -236,6 +236,12 @@ html { scroll-behavior: smooth; }
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Focus mode celebrations */
+@keyframes focus-celebrate { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.animate-celebrate { animation: focus-celebrate 0.6s ease-in-out; }
+@keyframes focus-complete-pop { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.animate-complete-pop { animation: focus-complete-pop 0.5s ease-out both; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
