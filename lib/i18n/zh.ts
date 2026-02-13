@@ -3,11 +3,11 @@ export const zh = {
   'nav.start': '开始创作',
   'nav.features': '特性',
   'nav.faq': 'FAQ',
-  'nav.colors': '155色',
+  'nav.colors': '1600+色',
 
   // hero
   'hero.title': '图片秒变拼豆图纸',
-  'hero.desc': '上传任意图片，CIEDE2000 感知色差算法精准匹配 155 种真实拼豆颜色。支持 Perler / Hama / Artkal，免费导出 PNG & PDF 图纸。',
+  'hero.desc': '上传任意图片，CIEDE2000 感知色差算法精准匹配 1600+ 种真实拼豆颜色。支持 Perler / Hama / Artkal / MARD / COCO 等 8 大品牌，免费导出 PNG & PDF 图纸。',
   'hero.noReg': '✅ 无需注册',
   'hero.local': '✅ 浏览器端处理',
   'hero.free': '✅ 完全免费',
@@ -28,9 +28,9 @@ export const zh = {
 
   // features
   'features.title': '为什么选择 PinDou？',
-  'features.subtitle': '专为真实拼豆项目设计，不是通用像素画工具',
-  'feat1.title': '155色真实色板',
-  'feat1.desc': '覆盖 Perler(70) / Hama(50) / Artkal(35)，每种颜色都能买到实物',
+  'features.subtitle': '专为真实拼豆项目设计，8 大品牌 1600+ 色精准匹配',
+  'feat1.title': '8 品牌 1600+ 真实色板',
+  'feat1.desc': '覆盖 Perler / Hama / Artkal S / MARD / COCO / 漫漫 / 盼盼 / 咪小窝，每种颜色都能买到实物',
   'feat2.title': 'CIEDE2000 色差匹配',
   'feat2.desc': '感知色差金标准算法，肤色、渐变、阴影都精准还原',
   'feat3.title': '线性RGB下采样',
@@ -59,7 +59,7 @@ export const zh = {
   'faq1.q': '需要注册账号吗？',
   'faq1.a': '不需要。直接上传图片即可使用，无需注册、无需登录。',
   'faq2.q': '支持哪些拼豆品牌？',
-  'faq2.a': '目前支持 Perler（70色）、Hama（50色）、Artkal S系列（35色），共155种颜色。',
+  'faq2.a': '支持 Perler、Hama、Artkal S、MARD、COCO、漫漫、盼盼、咪小窝共 8 个品牌，1600+ 种颜色。',
   'faq3.q': '图片会上传到服务器吗？',
   'faq3.a': '不会。所有图像处理都在浏览器本地完成，你的图片不会离开你的设备。',
   'faq4.q': '为什么颜色比其他工具更准？',
@@ -74,7 +74,7 @@ export const zh = {
 
   // footer
   'footer.tagline': '拼豆图纸生成器',
-  'footer.desc': 'CIEDE2000 感知色差匹配 · Perler / Hama / Artkal · 155色 · 开源免费',
+  'footer.desc': 'CIEDE2000 感知色差匹配 · 8 大品牌 · 1600+ 色 · 开源免费',
 
   // upload
   'upload.drag': '拖拽图片到此处，或点击上传',

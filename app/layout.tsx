@@ -16,12 +16,12 @@ const nunitoSans = Nunito_Sans({
 
 export const metadata: Metadata = {
   title: "PinDou 拼豆图纸生成器 | Free Bead Pattern Generator",
-  description: "免费在线拼豆图纸生成器。上传图片，CIEDE2000 感知色差算法精准匹配 155 种 Perler / Hama / Artkal 真实拼豆颜色，导出 PNG/PDF 图纸。浏览器端处理，无需注册。",
+  description: "免费在线拼豆图纸生成器。上传图片，CIEDE2000 感知色差算法精准匹配 1600+ 种 Perler / Hama / Artkal / MARD / COCO 等 8 大品牌真实拼豆颜色，导出 PNG/PDF 图纸。浏览器端处理，无需注册。",
   keywords: "拼豆,图纸生成器,perler beads,hama beads,artkal beads,pixel art,bead pattern,拼豆图纸,像素画",
   manifest: "/manifest.json",
   openGraph: {
     title: "PinDou 拼豆图纸生成器",
-    description: "图片秒变拼豆图纸 — 155色 CIEDE2000 精准匹配",
+    description: "图片秒变拼豆图纸 — 8 大品牌 1600+ 色 CIEDE2000 精准匹配",
     type: "website",
   },
   other: {

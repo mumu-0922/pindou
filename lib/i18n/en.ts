@@ -4,10 +4,10 @@ export const en: Record<I18nKey, string> = {
   'nav.start': 'Get Started',
   'nav.features': 'Features',
   'nav.faq': 'FAQ',
-  'nav.colors': '155 Colors',
+  'nav.colors': '1600+ Colors',
 
   'hero.title': 'Turn Photos into Bead Patterns',
-  'hero.desc': 'Upload any image, CIEDE2000 perceptual color matching with 155 real bead colors. Supports Perler / Hama / Artkal. Free PNG & PDF export.',
+  'hero.desc': 'Upload any image, CIEDE2000 perceptual color matching with 1600+ real bead colors. Supports 8 brands including Perler / Hama / Artkal / MARD / COCO. Free PNG & PDF export.',
   'hero.noReg': '✅ No Sign-up',
   'hero.local': '✅ Browser-side Processing',
   'hero.free': '✅ Completely Free',
@@ -25,9 +25,9 @@ export const en: Record<I18nKey, string> = {
   'tool.generating': 'Generating...',
 
   'features.title': 'Why PinDou?',
-  'features.subtitle': 'Built for real bead projects, not a generic pixel art tool',
-  'feat1.title': '155 Real Bead Colors',
-  'feat1.desc': 'Covers Perler(70) / Hama(50) / Artkal(35), every color is purchasable',
+  'features.subtitle': 'Built for real bead projects — 8 brands, 1600+ colors',
+  'feat1.title': '8 Brands, 1600+ Real Colors',
+  'feat1.desc': 'Covers Perler / Hama / Artkal S / MARD / COCO / Manman / Panpan / Mixiaowo — every color is purchasable',
   'feat2.title': 'CIEDE2000 Color Matching',
   'feat2.desc': 'Gold-standard perceptual color difference for accurate skin tones, gradients & shadows',
   'feat3.title': 'Linear RGB Downsampling',
@@ -54,7 +54,7 @@ export const en: Record<I18nKey, string> = {
   'faq1.q': 'Do I need to sign up?',
   'faq1.a': 'No. Just upload an image and start using it. No registration or login required.',
   'faq2.q': 'Which bead brands are supported?',
-  'faq2.a': 'Currently Perler (70), Hama (50), and Artkal S-series (35) — 155 colors total.',
+  'faq2.a': 'Supports 8 brands: Perler, Hama, Artkal S, MARD, COCO, Manman, Panpan, Mixiaowo — 1600+ colors total.',
   'faq3.q': 'Are images uploaded to a server?',
   'faq3.a': 'No. All processing happens locally in your browser. Your images never leave your device.',
   'faq4.q': 'Why are colors more accurate than other tools?',
@@ -67,7 +67,7 @@ export const en: Record<I18nKey, string> = {
   'cta.btn': '🎨 Get Started',
 
   'footer.tagline': 'Bead Pattern Generator',
-  'footer.desc': 'CIEDE2000 Perceptual Matching · Perler / Hama / Artkal · 155 Colors · Free & Open Source',
+  'footer.desc': 'CIEDE2000 Perceptual Matching · 8 Brands · 1600+ Colors · Free & Open Source',
 
   'upload.drag': 'Drag & drop image here, or click to upload',
   'upload.formats': 'Supports PNG / JPG / WebP, max 10MB',
