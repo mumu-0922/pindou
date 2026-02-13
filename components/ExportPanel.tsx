@@ -22,6 +22,8 @@ interface Props {
 export default function ExportPanel({ pattern, palette }: Props) {
   const { t } = useI18n();
   const [qi, setQi] = useState(1);
+  const [exporting, setExporting] = useState(false);
+  const [progress, setProgress] = useState(0);
   if (!pattern) return null;
   const fname = `bead-${pattern.metadata.brand}-${pattern.metadata.width}x${pattern.metadata.height}`;
   const { width, height } = pattern.metadata;
@@ -30,9 +32,16 @@ export default function ExportPanel({ pattern, palette }: Props) {
   const py = height * cs;
 
   const handlePng = async () => {
-    const canvas = renderPatternToCanvas(pattern, palette, cs, true, true);
-    const blob = await canvasToBlob(canvas);
-    downloadBlob(blob, `${fname}.png`);
+    if (exporting) return;
+    setExporting(true);
+    setProgress(0);
+    try {
+      const canvas = await renderPatternToCanvas(pattern, palette, cs, true, true, setProgress);
+      const blob = await canvasToBlob(canvas);
+      downloadBlob(blob, `${fname}.png`);
+    } finally {
+      setExporting(false);
+    }
   };
   const handlePdf = () => {
     const doc = exportPdf({ pattern, palette, showCodes: true });
@@ -48,16 +57,18 @@ export default function ExportPanel({ pattern, palette }: Props) {
         </div>
         <div className="flex gap-1">
           {QUALITY.map((q, i) => (
-            <button key={q.key} onClick={() => setQi(i)}
-              className={`flex-1 text-xs py-1 rounded transition ${i === qi ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 hover:opacity-80'}`}>
+            <button key={q.key} onClick={() => !exporting && setQi(i)}
+              className={`flex-1 text-xs py-1 rounded transition ${i === qi ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 hover:opacity-80'} ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}>
               {t(q.key as any)}
             </button>
           ))}
         </div>
       </div>
       <div className="flex gap-3">
-        <Button onClick={handlePng} className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95">📥 PNG</Button>
-        <Button onClick={handlePdf} className="flex-1 bg-rose-600 text-white hover:bg-rose-700 active:scale-95">📄 PDF</Button>
+        <Button onClick={handlePng} disabled={exporting} className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 disabled:opacity-50">
+          {exporting ? `⏳ ${progress}%` : '📥 PNG'}
+        </Button>
+        <Button onClick={handlePdf} disabled={exporting} className="flex-1 bg-rose-600 text-white hover:bg-rose-700 active:scale-95 disabled:opacity-50">📄 PDF</Button>
       </div>
     </div>
   );

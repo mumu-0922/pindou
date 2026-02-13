@@ -1,41 +1,52 @@
 import type { BeadPattern, CompiledBeadColor } from '@/lib/types/bead';
 
-export function renderPatternToCanvas(
+const ROWS_PER_CHUNK = 8;
+
+function yieldFrame(): Promise<void> {
+  return new Promise(r => requestAnimationFrame(() => r()));
+}
+
+export async function renderPatternToCanvas(
   pattern: BeadPattern,
   palette: CompiledBeadColor[],
   cellSize: number = 20,
   showGrid: boolean = true,
-  showCodes: boolean = false
-): HTMLCanvasElement {
+  showCodes: boolean = false,
+  onProgress?: (pct: number) => void,
+): Promise<HTMLCanvasElement> {
   const { width, height } = pattern.metadata;
   const canvas = document.createElement('canvas');
   canvas.width = width * cellSize;
   canvas.height = height * cellSize;
   const ctx = canvas.getContext('2d')!;
-
   const colorMap = new Map(palette.map(c => [c.id, c]));
+  const font = `${Math.max(8, cellSize * 0.35)}px monospace`;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const cell = pattern.cells[y][x];
-      const color = colorMap.get(cell.colorId);
-      ctx.fillStyle = color?.hex ?? '#FF00FF';
-      ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-
-      if (showGrid) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
-      }
-
-      if (showCodes && color && cellSize >= 16) {
-        ctx.fillStyle = luminance(color.rgb) > 0.5 ? '#000' : '#FFF';
-        ctx.font = `${Math.max(8, cellSize * 0.35)}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(color.code, x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
+  for (let y0 = 0; y0 < height; y0 += ROWS_PER_CHUNK) {
+    const yEnd = Math.min(y0 + ROWS_PER_CHUNK, height);
+    for (let y = y0; y < yEnd; y++) {
+      for (let x = 0; x < width; x++) {
+        const cell = pattern.cells[y][x];
+        const color = colorMap.get(cell.colorId);
+        const px = x * cellSize, py = y * cellSize;
+        ctx.fillStyle = color?.hex ?? '#FF00FF';
+        ctx.fillRect(px, py, cellSize, cellSize);
+        if (showGrid) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(px, py, cellSize, cellSize);
+        }
+        if (showCodes && color && cellSize >= 16) {
+          ctx.fillStyle = luminance(color.rgb) > 0.5 ? '#000' : '#FFF';
+          ctx.font = font;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(color.code, px + cellSize / 2, py + cellSize / 2);
+        }
       }
     }
+    onProgress?.(Math.round(yEnd / height * 100));
+    if (y0 + ROWS_PER_CHUNK < height) await yieldFrame();
   }
   return canvas;
 }
