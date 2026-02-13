@@ -19,25 +19,25 @@ export function exportPdf(opts: PdfExportOptions): jsPDF {
   const pageW = 297, pageH = 210;
   const { width, height } = pattern.metadata;
 
-  // === Page 1: Full overview ===
-  doc.setFontSize(14);
-  doc.text('Overview', pageW / 2, 12, { align: 'center' });
-  const maxW = pageW - 20, maxH = pageH - 30;
-  const overviewCell = Math.min(maxW / width, maxH / height);
-  const ox = (pageW - width * overviewCell) / 2;
-  const oy = 18;
-  for (let r = 0; r < height; r++) {
-    for (let c = 0; c < width; c++) {
-      const cell = pattern.cells[r][c];
-      const color = colorMap.get(cell.colorId);
-      const hex = color?.hex ?? '#FF00FF';
-      const rgb = hexToRgbArr(hex);
-      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-      doc.rect(ox + c * overviewCell, oy + r * overviewCell, overviewCell, overviewCell, 'F');
-    }
-  }
-  // Board grid overlay
+  // === Page 1: Full overview (only when multiple boards) ===
   if (boards.length > 1) {
+    doc.setFontSize(14);
+    doc.text('Overview', pageW / 2, 12, { align: 'center' });
+    const maxW0 = pageW - 20, maxH0 = pageH - 30;
+    const overviewCell = Math.min(maxW0 / width, maxH0 / height);
+    const ox = (pageW - width * overviewCell) / 2;
+    const oy = 18;
+    for (let r = 0; r < height; r++) {
+      for (let c = 0; c < width; c++) {
+        const cell = pattern.cells[r][c];
+        const color = colorMap.get(cell.colorId);
+        const hex = color?.hex ?? '#FF00FF';
+        const rgb = hexToRgbArr(hex);
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+        doc.rect(ox + c * overviewCell, oy + r * overviewCell, overviewCell, overviewCell, 'F');
+      }
+    }
+    // Board grid overlay
     doc.setDrawColor(0);
     doc.setLineWidth(0.3);
     const bCols = Math.ceil(width / boardSize), bRows = Math.ceil(height / boardSize);
@@ -55,17 +55,17 @@ export function exportPdf(opts: PdfExportOptions): jsPDF {
       const by = oy + (startR + bh / 2) * overviewCell + 1;
       doc.text(board.label, bx, by, { align: 'center' });
     }
+    doc.setTextColor(0);
+    doc.setFontSize(8);
+    doc.text(
+      `${pattern.metadata.brand.toUpperCase()} | ${width}×${height} | ${boards.length} boards`,
+      pageW / 2, pageH - 5, { align: 'center' }
+    );
   }
-  doc.setTextColor(0);
-  doc.setFontSize(8);
-  doc.text(
-    `${pattern.metadata.brand.toUpperCase()} | ${width}×${height} | ${boards.length} boards`,
-    pageW / 2, pageH - 5, { align: 'center' }
-  );
 
   // === Board detail pages ===
-  boards.forEach((board) => {
-    doc.addPage();
+  boards.forEach((board, idx) => {
+    if (boards.length > 1 || idx > 0) doc.addPage();
 
     // Calibration box (10mm x 10mm) top-left
     drawCalibrationBox(doc, 5, 5);
