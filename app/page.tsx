@@ -9,6 +9,8 @@ import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
 import { adjustPixels, sharpenPixels, sharpenSource } from '@/lib/engine/adjustments';
 import { removeIsolatedNoise } from '@/lib/engine/pattern-cleanup';
+import { cropToSubject } from '@/lib/engine/subject-crop';
+import { buildUsageMap, limitPaletteWithKeyColors, selectKeyColorIds } from '@/lib/engine/palette-limit';
 import { loadPalette } from '@/lib/data/palettes/loader';
 import { calculateUsage } from '@/lib/utils/usage-calculator';
 import { HistoryManager } from '@/lib/utils/history';
@@ -37,7 +39,7 @@ export default function Home() {
   const [sharpness, setSharpness] = useState(0);
   const [maxColors, setMaxColors] = useState(0);
   const [pixMode, setPixMode] = useState<PixelationMode>('average');
-  const [lowResOptimize, setLowResOptimize] = useState(false);
+  const [lowResOptimize, setLowResOptimize] = useState(true);
   const [lockRatio, setLockRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState(1);
   const [pattern, setPattern] = useState<BeadPattern | null>(null);
@@ -123,17 +125,20 @@ export default function Home() {
       let pal = cIds && cIds.size > 0 ? fullPal.filter(c => cIds.has(c.id)) : fullPal;
       if (pal.length === 0) pal = fullPal;
 
-      // maxColors: keep only the top N most-used colors after initial match
+      // For low-resolution patterns, crop subject first and protect key colors during palette limiting.
       const img = await loadImage(file);
       if (myId !== genId.current) return;
       const isSmallPattern = w <= 40 && h <= 40;
       const useLowResOptimize = lowResOpt && isSmallPattern;
       const effectivePixMode: PixelationMode = useLowResOptimize ? 'edge-aware' : pm;
       const effectiveDithering: DitheringMode = useLowResOptimize ? 'none' : dith;
-      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(10, pal.length) : mc;
+      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(8, pal.length) : mc;
       const loaded = imageToPixels(img, bg);
-      sharpenSource(loaded.data, loaded.width, loaded.height, sharp);
-      const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, effectivePixMode);
+      const prepared = useLowResOptimize
+        ? cropToSubject(loaded.data, loaded.width, loaded.height, { background: bg })
+        : { data: loaded.data, width: loaded.width, height: loaded.height, cropped: false, offsetX: 0, offsetY: 0 };
+      sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
+      const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
 
       // Apply brightness/contrast/saturation + sharpening
       const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
@@ -144,15 +149,13 @@ export default function Home() {
       };
       const dithered = applyDithering(adjusted, w, h, effectiveDithering, matchFn);
       let matched = effectiveDithering === 'none' ? matchColors(adjusted, pal) : matchColors(dithered, pal);
+      let protectedColorIds = selectKeyColorIds(pal, buildUsageMap(matched));
 
       // Limit max colors — re-dither with limited palette for clean blocks
       if (effectiveMaxColors > 0 && effectiveMaxColors < pal.length) {
-        const freq = new Map<string, number>();
-        for (const c of matched) freq.set(c.id, (freq.get(c.id) || 0) + 1);
-        const topIds = new Set(
-          [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, effectiveMaxColors).map(e => e[0])
-        );
-        const limitedPal = pal.filter(c => topIds.has(c.id));
+        const usage = buildUsageMap(matched);
+        const limited = limitPaletteWithKeyColors(pal, usage, effectiveMaxColors);
+        const limitedPal = limited.limitedPalette.length > 0 ? limited.limitedPalette : pal;
         if (effectiveDithering === 'none') {
           matched = matchColors(adjusted, limitedPal);
         } else {
@@ -162,6 +165,8 @@ export default function Home() {
           };
           matched = matchColors(applyDithering(adjusted, w, h, effectiveDithering, limitedMatchFn), limitedPal);
         }
+        protectedColorIds = new Set(limited.protectedIds);
+        for (const id of selectKeyColorIds(limitedPal, buildUsageMap(matched))) protectedColorIds.add(id);
         pal = limitedPal;
       }
 
@@ -171,7 +176,10 @@ export default function Home() {
       const rawCells = Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
       );
-      const cells = useLowResOptimize ? removeIsolatedNoise(rawCells, w, h, 2) : rawCells;
+      const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
+      const cells = useLowResOptimize
+        ? removeIsolatedNoise(rawCells, w, h, 2, protectedColorIds, lumaMap)
+        : rawCells;
 
       setPattern({
         version: 1,

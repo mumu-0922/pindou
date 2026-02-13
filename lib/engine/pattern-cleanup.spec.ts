@@ -48,4 +48,36 @@ describe('removeIsolatedNoise', () => {
       'AAAAAA',
     ]);
   });
+
+  it('does not remove protected key colors', () => {
+    const cells = buildCells([
+      'AAAAA',
+      'AABAA',
+      'AAAAA',
+    ]);
+    const cleaned = removeIsolatedNoise(cells, 5, 3, 2, new Set(['B']));
+    expect(dumpCells(cleaned)).toEqual([
+      'AAAAA',
+      'AABAA',
+      'AAAAA',
+    ]);
+  });
+
+  it('preserves tiny high-contrast details when luma map is provided', () => {
+    const cells = buildCells([
+      'WWWWW',
+      'WWBWW',
+      'WWWWW',
+    ]);
+    const luma = new Map<string, number>([
+      ['W', 240],
+      ['B', 15],
+    ]);
+    const cleaned = removeIsolatedNoise(cells, 5, 3, 2, new Set(), luma);
+    expect(dumpCells(cleaned)).toEqual([
+      'WWWWW',
+      'WWBWW',
+      'WWWWW',
+    ]);
+  });
 });

@@ -108,7 +108,7 @@ export const zh = {
   'param.sharpness': '锐度',
   'param.sharpnessHint': '💡 小尺寸建议：提高对比度 +15~30，锐度 +30~60，颜色数 5~10',
   'param.lowResOptimize': '低像素优化',
-  'param.lowResOptimizeHint': '≤40×40 建议开启：优先保留轮廓并自动清理孤立噪点',
+  'param.lowResOptimizeHint': '≤40×40 建议开启：自动裁切主体、保留关键颜色并清理孤立噪点',
   'param.reset': '重置',
   'param.boardSize': '拼板尺寸',
   'param.boardCount': '需要拼板',

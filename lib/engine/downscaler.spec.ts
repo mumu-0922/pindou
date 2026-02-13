@@ -37,4 +37,20 @@ describe('downscale edge-aware mode', () => {
     expect(edgeAware[middle].g).toBeLessThanOrEqual(average[middle].g);
     expect(edgeAware[middle].b).toBeLessThanOrEqual(average[middle].b);
   });
+
+  it('reduces cross-edge blending in a high-contrast split block', () => {
+    const src = createSolidRgba(4, 4, 255, 255, 255);
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 2; x++) {
+        const i = (y * 4 + x) * 4;
+        src[i] = 0;
+        src[i + 1] = 0;
+        src[i + 2] = 0;
+      }
+    }
+
+    const average = downscale(src, 4, 4, 1, 1, 'average');
+    const edgeAware = downscale(src, 4, 4, 1, 1, 'edge-aware');
+    expect(edgeAware[0].r).toBeLessThan(average[0].r);
+  });
 });

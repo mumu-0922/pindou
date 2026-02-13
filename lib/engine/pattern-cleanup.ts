@@ -21,9 +21,12 @@ export function removeIsolatedNoise(
   cells: BeadCell[][],
   width: number,
   height: number,
-  minComponentSize: number = 2
+  minComponentSize: number = 2,
+  protectedColorIds: Set<string> = new Set<string>(),
+  colorLumaMap?: Map<string, number>
 ): BeadCell[][] {
   if (width <= 0 || height <= 0 || minComponentSize < 1) return cells;
+  const preserveContrastThreshold = 42;
 
   const source = cells.map(row => row.map(cell => cell.colorId));
   const output = cells.map(row => row.map(cell => ({ ...cell })));
@@ -54,18 +57,28 @@ export function removeIsolatedNoise(
     }
 
     if (component.length > minComponentSize) continue;
+    if (protectedColorIds.has(targetColor)) continue;
 
     const neighborCount = new Map<string, number>();
+    let maxContrast = 0;
     for (const idx of component) {
       const [row, col] = indexToCoord(idx, width);
       for (const [nr, nc] of neighbors4(row, col, width, height)) {
         const colorId = source[nr][nc];
         if (colorId === targetColor) continue;
         neighborCount.set(colorId, (neighborCount.get(colorId) ?? 0) + 1);
+        if (colorLumaMap) {
+          const sourceLuma = colorLumaMap.get(targetColor);
+          const neighborLuma = colorLumaMap.get(colorId);
+          if (sourceLuma !== undefined && neighborLuma !== undefined) {
+            maxContrast = Math.max(maxContrast, Math.abs(sourceLuma - neighborLuma));
+          }
+        }
       }
     }
 
     if (neighborCount.size === 0) continue;
+    if (maxContrast >= preserveContrastThreshold) continue;
 
     let replaceColor = targetColor;
     let best = -1;

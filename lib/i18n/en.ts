@@ -97,7 +97,7 @@ export const en: Record<I18nKey, string> = {
   'param.saturation': 'Saturation',
   'param.sharpness': 'Sharpness',
   'param.lowResOptimize': 'Low-res Optimize',
-  'param.lowResOptimizeHint': 'Recommended for <=40x40: preserve outlines and remove isolated noise.',
+  'param.lowResOptimizeHint': 'Recommended for <=40x40: auto-crop subject, protect key colors, and remove isolated noise.',
   'param.sharpnessHint': '💡 Small size tip: increase contrast +15~30, sharpness +30~60, max colors 5~10',
   'param.reset': 'Reset',
   'param.boardSize': 'Board Size',
