@@ -1,6 +1,8 @@
 import type { BeadPattern, CompiledBeadColor } from '@/lib/types/bead';
 
 const ROWS_PER_CHUNK = 8;
+const MAX_CANVAS_DIM = 16384;
+const MAX_CANVAS_PIXELS = 268435456; // 256M
 
 function yieldFrame(): Promise<void> {
   return new Promise(r => requestAnimationFrame(() => r()));
@@ -15,6 +17,10 @@ export async function renderPatternToCanvas(
   onProgress?: (pct: number) => void,
 ): Promise<HTMLCanvasElement> {
   const { width, height } = pattern.metadata;
+  // Clamp cellSize to stay within browser canvas limits
+  const maxByDim = Math.floor(MAX_CANVAS_DIM / Math.max(width, height));
+  const maxByPixels = Math.floor(Math.sqrt(MAX_CANVAS_PIXELS / (width * height)));
+  cellSize = Math.min(cellSize, maxByDim, maxByPixels);
   const canvas = document.createElement('canvas');
   canvas.width = width * cellSize;
   canvas.height = height * cellSize;
