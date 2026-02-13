@@ -141,6 +141,11 @@ export const zh = {
   'usage.name': '名称',
   'usage.count': '数量',
 
+  'param.pixMode': '像素化模式',
+  'param.pixAverage': '均值（写实）',
+  'param.pixDominant': '主色（卡通）',
+  'editor.floodHint': 'Shift+点击：油漆桶填充',
+
   'palette.edit': '自定义色板',
   'palette.selectAll': '全选',
   'palette.deselectAll': '清空',

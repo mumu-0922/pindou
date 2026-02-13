@@ -15,7 +15,22 @@ export interface DownscaledPixel {
   r: number; g: number; b: number; // sRGB 0-255
 }
 
+export type PixelationMode = 'average' | 'dominant';
+
 export function downscale(
+  data: Uint8ClampedArray,
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number,
+  mode: PixelationMode = 'average'
+): DownscaledPixel[] {
+  return mode === 'dominant'
+    ? downscaleDominant(data, srcW, srcH, dstW, dstH)
+    : downscaleAverage(data, srcW, srcH, dstW, dstH);
+}
+
+function downscaleAverage(
   data: Uint8ClampedArray,
   srcW: number,
   srcH: number,
@@ -49,6 +64,49 @@ export function downscale(
         g: linearToSrgb(linG / count),
         b: linearToSrgb(linB / count),
       };
+    }
+  }
+  return result;
+}
+
+function downscaleDominant(
+  data: Uint8ClampedArray,
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number
+): DownscaledPixel[] {
+  const result: DownscaledPixel[] = new Array(dstW * dstH);
+  const scaleX = srcW / dstW;
+  const scaleY = srcH / dstH;
+
+  for (let dy = 0; dy < dstH; dy++) {
+    for (let dx = 0; dx < dstW; dx++) {
+      const sx0 = Math.floor(dx * scaleX);
+      const sy0 = Math.floor(dy * scaleY);
+      const sx1 = Math.min(Math.ceil((dx + 1) * scaleX), srcW);
+      const sy1 = Math.min(Math.ceil((dy + 1) * scaleY), srcH);
+
+      // Quantize to 5-bit per channel for frequency counting
+      const freq = new Map<number, { count: number; r: number; g: number; b: number }>();
+      let bestKey = 0, bestCount = 0;
+      for (let sy = sy0; sy < sy1; sy++) {
+        for (let sx = sx0; sx < sx1; sx++) {
+          const i = (sy * srcW + sx) * 4;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+          const entry = freq.get(key);
+          if (entry) {
+            entry.count++;
+            if (entry.count > bestCount) { bestCount = entry.count; bestKey = key; }
+          } else {
+            freq.set(key, { count: 1, r, g, b });
+            if (1 > bestCount) { bestCount = 1; bestKey = key; }
+          }
+        }
+      }
+      const best = freq.get(bestKey)!;
+      result[dy * dstW + dx] = { r: best.r, g: best.g, b: best.b };
     }
   }
   return result;

@@ -124,6 +124,11 @@ export const en: Record<I18nKey, string> = {
   'usage.name': 'Name',
   'usage.count': 'Count',
 
+  'param.pixMode': 'Pixelation',
+  'param.pixAverage': 'Average (Realistic)',
+  'param.pixDominant': 'Dominant (Cartoon)',
+  'editor.floodHint': 'Shift+Click: Flood Fill',
+
   'palette.edit': 'Custom Palette',
   'palette.selectAll': 'Select All',
   'palette.deselectAll': 'Deselect All',

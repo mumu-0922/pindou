@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { BeadBrand, DitheringMode } from '@/lib/types/bead';
 import type { BackgroundMode } from '@/lib/engine/image-loader';
+import type { PixelationMode } from '@/lib/engine/downscaler';
 import { getAvailableBrands } from '@/lib/data/palettes/loader';
 import { useI18n } from '@/lib/i18n/context';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface Props {
   contrast: number;
   saturation: number;
   maxColors: number;
+  pixMode: PixelationMode;
   lockRatio: boolean;
   aspectRatio: number;
   onBrandChange: (b: BeadBrand) => void;
@@ -32,6 +34,7 @@ interface Props {
   onContrastChange: (v: number) => void;
   onSaturationChange: (v: number) => void;
   onMaxColorsChange: (v: number) => void;
+  onPixModeChange: (v: PixelationMode) => void;
   onLockRatioChange: (v: boolean) => void;
 }
 
@@ -121,13 +124,23 @@ export default function ParameterPanel(props: Props) {
   return (
     <div className="card-premium p-4 space-y-1 bg-white dark:bg-gray-900">
       {/* Brand row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pb-3 border-b border-gray-100 dark:border-gray-800">
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs uppercase tracking-wide">{t('param.brand')}</Label>
           <Select value={props.brand} onValueChange={v => props.onBrandChange(v as BeadBrand)}>
             <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
               {brands.map(b => <SelectItem key={b} value={b}>{b.charAt(0).toUpperCase() + b.slice(1)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label className="text-xs uppercase tracking-wide">{t('param.pixMode')}</Label>
+          <Select value={props.pixMode} onValueChange={v => props.onPixModeChange(v as PixelationMode)}>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="average">{t('param.pixAverage')}</SelectItem>
+              <SelectItem value="dominant">{t('param.pixDominant')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

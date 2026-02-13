@@ -4,6 +4,7 @@ import type { BeadPattern, BeadBrand, DitheringMode, CompiledBeadColor, BeadUsag
 import type { BackgroundMode } from '@/lib/engine/image-loader';
 import { loadImage, imageToPixels } from '@/lib/engine/image-loader';
 import { downscale } from '@/lib/engine/downscaler';
+import type { PixelationMode } from '@/lib/engine/downscaler';
 import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
 import { adjustPixels } from '@/lib/engine/adjustments';
@@ -33,6 +34,7 @@ export default function Home() {
   const [contrast, setContrast] = useState(0);
   const [saturation, setSaturation] = useState(0);
   const [maxColors, setMaxColors] = useState(0);
+  const [pixMode, setPixMode] = useState<PixelationMode>('average');
   const [lockRatio, setLockRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState(1);
   const [pattern, setPattern] = useState<BeadPattern | null>(null);
@@ -92,7 +94,7 @@ export default function Home() {
     { q: t('faq5.q'), a: t('faq5.a') },
   ];
 
-  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null) => {
+  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null, pm: PixelationMode = 'average') => {
     setLoading(true);
     try {
       const fullPal = await loadPalette(b);
@@ -102,7 +104,7 @@ export default function Home() {
       // maxColors: keep only the top N most-used colors after initial match
       const img = await loadImage(file);
       const loaded = imageToPixels(img, bg);
-      const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h);
+      const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, pm);
 
       // Apply brightness/contrast/saturation
       const adjusted = adjustPixels(pixels, bri, con, sat);
@@ -152,16 +154,16 @@ export default function Home() {
       setAspectRatio(ar);
       const newH = Math.round(width / ar);
       setHeight(Math.max(1, Math.min(200, newH)));
-      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds);
+      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode);
     };
     img.src = URL.createObjectURL(file);
-  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, generate]);
+  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, generate]);
 
   // 参数变更自动重新生成
   useEffect(() => {
-    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds);
+    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds]);
+  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode]);
 
   // 品牌切换时重置自定义色板
   useEffect(() => {
@@ -184,14 +186,40 @@ export default function Home() {
     }
   }, [brand, fullPalette]);
 
-  const handleCellClick = useCallback((row: number, col: number) => {
+  const handleCellClick = useCallback((row: number, col: number, shiftKey: boolean) => {
     if (!pattern || !selectedColorId) return;
     const oldColorId = pattern.cells[row][col].colorId;
     if (oldColorId === selectedColorId) return;
-    const op: PatchOp = { type: 'set', row, col, oldColorId, newColorId: selectedColorId };
-    history.push([op]);
+
     const newCells = pattern.cells.map(r => [...r]);
-    newCells[row][col] = { colorId: selectedColorId };
+    const ops: PatchOp[] = [];
+
+    if (shiftKey) {
+      // Flood fill BFS
+      const { width: w, height: h } = pattern.metadata;
+      const visited = new Set<number>();
+      const queue = [row * w + col];
+      visited.add(row * w + col);
+      while (queue.length) {
+        const idx = queue.shift()!;
+        const r = Math.floor(idx / w), c = idx % w;
+        ops.push({ type: 'set', row: r, col: c, oldColorId, newColorId: selectedColorId });
+        newCells[r][c] = { colorId: selectedColorId };
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          const nr = r + dr, nc = c + dc;
+          const ni = nr * w + nc;
+          if (nr >= 0 && nr < h && nc >= 0 && nc < w && !visited.has(ni) && pattern.cells[nr][nc].colorId === oldColorId) {
+            visited.add(ni);
+            queue.push(ni);
+          }
+        }
+      }
+    } else {
+      ops.push({ type: 'set', row, col, oldColorId, newColorId: selectedColorId });
+      newCells[row][col] = { colorId: selectedColorId };
+    }
+
+    history.push(ops);
     setPattern({ ...pattern, cells: newCells });
   }, [pattern, selectedColorId, history]);
 
@@ -265,12 +293,12 @@ export default function Home() {
           <ParameterPanel
             brand={brand} width={width} height={height} dithering={dithering} background={background}
             brightness={brightness} contrast={contrast} saturation={saturation}
-            maxColors={maxColors} lockRatio={lockRatio} aspectRatio={aspectRatio}
+            maxColors={maxColors} pixMode={pixMode} lockRatio={lockRatio} aspectRatio={aspectRatio}
             onBrandChange={setBrand} onWidthChange={setWidth} onHeightChange={setHeight}
             onDitheringChange={setDithering} onBackgroundChange={setBackground}
             onBrightnessChange={setBrightness} onContrastChange={setContrast}
             onSaturationChange={setSaturation} onMaxColorsChange={setMaxColors}
-            onLockRatioChange={setLockRatio}
+            onPixModeChange={setPixMode} onLockRatioChange={setLockRatio}
           />
 
           {fullPalette.length > 0 && (

@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n/context';
 interface Props {
   pattern: BeadPattern | null;
   palette: CompiledBeadColor[];
-  onCellClick?: (row: number, col: number) => void;
+  onCellClick?: (row: number, col: number, shiftKey: boolean) => void;
 }
 
 export default function PatternPreview({ pattern, palette, onCellClick }: Props) {
@@ -100,7 +100,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
     const col = Math.floor((e.clientX - rect.left) / cellSize);
     const row = Math.floor((e.clientY - rect.top) / cellSize);
     if (row >= 0 && row < pattern.metadata.height && col >= 0 && col < pattern.metadata.width) {
-      onCellClick(row, col);
+      onCellClick(row, col, e.shiftKey);
     }
   };
 
