@@ -164,4 +164,11 @@ export const en: Record<I18nKey, string> = {
   'focus.totalTime': 'Total Time',
   'focus.noData': 'No pattern data. Please generate a pattern first.',
   'focus.clickHint': 'Click regions of the current color to mark as completed',
+
+  // export quality
+  'export.quality': 'Export Quality',
+  'export.low': 'Standard',
+  'export.mid': 'HD',
+  'export.high': 'Ultra HD',
+  'export.ultra': 'Print',
 };

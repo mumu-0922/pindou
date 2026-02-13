@@ -181,6 +181,13 @@ export const zh = {
   'focus.totalTime': '总用时',
   'focus.noData': '没有图纸数据，请先生成图纸',
   'focus.clickHint': '点击当前颜色的区域标记为已完成',
+
+  // export quality
+  'export.quality': '导出画质',
+  'export.low': '标准',
+  'export.mid': '高清',
+  'export.high': '超清',
+  'export.ultra': '印刷级',
 } as const;
 
 export type I18nKey = keyof typeof zh;
