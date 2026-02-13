@@ -124,6 +124,13 @@ export const en: Record<I18nKey, string> = {
   'usage.name': 'Name',
   'usage.count': 'Count',
 
+  'palette.edit': 'Custom Palette',
+  'palette.selectAll': 'Select All',
+  'palette.deselectAll': 'Deselect All',
+  'palette.selected': '{0}/{1} selected',
+  'palette.apply': 'Apply',
+  'palette.close': 'Close',
+
   'brand.perler': 'Perler',
   'brand.hama': 'Hama',
   'brand.artkal-s': 'Artkal S',

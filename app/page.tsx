@@ -16,6 +16,7 @@ import ParameterPanel from '@/components/ParameterPanel';
 import PatternPreview from '@/components/PatternPreview';
 import PatternEditor from '@/components/PatternEditor';
 import ColorPicker from '@/components/ColorPicker';
+import PaletteEditor from '@/components/PaletteEditor';
 import BeadUsageList from '@/components/BeadUsageList';
 import ExportPanel from '@/components/ExportPanel';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [customIds, setCustomIds] = useState<Set<string> | null>(null);
+  const [showPaletteEditor, setShowPaletteEditor] = useState(false);
+  const [fullPalette, setFullPalette] = useState<CompiledBeadColor[]>([]);
 
   const [history] = useState(() => new HistoryManager());
 
@@ -88,10 +92,12 @@ export default function Home() {
     { q: t('faq5.q'), a: t('faq5.a') },
   ];
 
-  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number) => {
+  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null) => {
     setLoading(true);
     try {
-      let pal = await loadPalette(b);
+      const fullPal = await loadPalette(b);
+      setFullPalette(fullPal);
+      let pal = cIds && cIds.size > 0 ? fullPal.filter(c => cIds.has(c.id)) : fullPal;
 
       // maxColors: keep only the top N most-used colors after initial match
       const img = await loadImage(file);
@@ -146,16 +152,37 @@ export default function Home() {
       setAspectRatio(ar);
       const newH = Math.round(width / ar);
       setHeight(Math.max(1, Math.min(200, newH)));
-      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors);
+      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds);
     };
     img.src = URL.createObjectURL(file);
-  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, generate]);
+  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, generate]);
 
   // 参数变更自动重新生成
   useEffect(() => {
-    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors);
+    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors]);
+  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds]);
+
+  // 品牌切换时重置自定义色板
+  useEffect(() => {
+    const key = `pindou-custom-palette-${brand}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try { setCustomIds(new Set(JSON.parse(saved))); } catch { setCustomIds(null); }
+    } else {
+      setCustomIds(null);
+    }
+  }, [brand]);
+
+  const handleApplyCustomPalette = useCallback((ids: Set<string>) => {
+    setCustomIds(ids.size === fullPalette.length ? null : ids);
+    const key = `pindou-custom-palette-${brand}`;
+    if (ids.size === fullPalette.length) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify([...ids]));
+    }
+  }, [brand, fullPalette]);
 
   const handleCellClick = useCallback((row: number, col: number) => {
     if (!pattern || !selectedColorId) return;
@@ -245,6 +272,28 @@ export default function Home() {
             onSaturationChange={setSaturation} onMaxColorsChange={setMaxColors}
             onLockRatioChange={setLockRatio}
           />
+
+          {fullPalette.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowPaletteEditor(true)}>
+                🎨 {t('palette.edit')} {customIds ? `(${customIds.size}/${fullPalette.length})` : ''}
+              </Button>
+              {customIds && (
+                <Button variant="ghost" size="sm" className="text-xs text-purple-600 dark:text-purple-400" onClick={() => { setCustomIds(null); localStorage.removeItem(`pindou-custom-palette-${brand}`); }}>
+                  ↺ {t('param.reset')}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {showPaletteEditor && (
+            <PaletteEditor
+              palette={fullPalette}
+              selectedIds={customIds ?? new Set(fullPalette.map(c => c.id))}
+              onApply={handleApplyCustomPalette}
+              onClose={() => setShowPaletteEditor(false)}
+            />
+          )}
 
           {loading && (
             <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">

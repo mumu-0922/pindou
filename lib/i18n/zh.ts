@@ -141,6 +141,13 @@ export const zh = {
   'usage.name': '名称',
   'usage.count': '数量',
 
+  'palette.edit': '自定义色板',
+  'palette.selectAll': '全选',
+  'palette.deselectAll': '清空',
+  'palette.selected': '已选 {0}/{1} 色',
+  'palette.apply': '应用',
+  'palette.close': '关闭',
+
   'brand.perler': 'Perler',
   'brand.hama': 'Hama',
   'brand.artkal-s': 'Artkal S',
