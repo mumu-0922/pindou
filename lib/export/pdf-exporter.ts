@@ -17,9 +17,55 @@ export function exportPdf(opts: PdfExportOptions): jsPDF {
   const boards = splitBoards(pattern, boardSize);
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const pageW = 297, pageH = 210;
+  const { width, height } = pattern.metadata;
 
-  boards.forEach((board, idx) => {
-    if (idx > 0) doc.addPage();
+  // === Page 1: Full overview ===
+  doc.setFontSize(14);
+  doc.text('Overview', pageW / 2, 12, { align: 'center' });
+  const maxW = pageW - 20, maxH = pageH - 30;
+  const overviewCell = Math.min(maxW / width, maxH / height);
+  const ox = (pageW - width * overviewCell) / 2;
+  const oy = 18;
+  for (let r = 0; r < height; r++) {
+    for (let c = 0; c < width; c++) {
+      const cell = pattern.cells[r][c];
+      const color = colorMap.get(cell.colorId);
+      const hex = color?.hex ?? '#FF00FF';
+      const rgb = hexToRgbArr(hex);
+      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+      doc.rect(ox + c * overviewCell, oy + r * overviewCell, overviewCell, overviewCell, 'F');
+    }
+  }
+  // Board grid overlay
+  if (boards.length > 1) {
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.3);
+    const bCols = Math.ceil(width / boardSize), bRows = Math.ceil(height / boardSize);
+    for (let br = 0; br <= bRows; br++)
+      doc.line(ox, oy + Math.min(br * boardSize, height) * overviewCell, ox + width * overviewCell, oy + Math.min(br * boardSize, height) * overviewCell);
+    for (let bc = 0; bc <= bCols; bc++)
+      doc.line(ox + Math.min(bc * boardSize, width) * overviewCell, oy, ox + Math.min(bc * boardSize, width) * overviewCell, oy + height * overviewCell);
+    // Board labels
+    doc.setFontSize(Math.max(5, overviewCell * boardSize * 0.15));
+    doc.setTextColor(0);
+    for (const board of boards) {
+      const startC = board.col * boardSize, startR = board.row * boardSize;
+      const bw = Math.min(boardSize, width - startC), bh = Math.min(boardSize, height - startR);
+      const bx = ox + (startC + bw / 2) * overviewCell;
+      const by = oy + (startR + bh / 2) * overviewCell + 1;
+      doc.text(board.label, bx, by, { align: 'center' });
+    }
+  }
+  doc.setTextColor(0);
+  doc.setFontSize(8);
+  doc.text(
+    `${pattern.metadata.brand.toUpperCase()} | ${width}×${height} | ${boards.length} boards`,
+    pageW / 2, pageH - 5, { align: 'center' }
+  );
+
+  // === Board detail pages ===
+  boards.forEach((board) => {
+    doc.addPage();
 
     // Calibration box (10mm x 10mm) top-left
     drawCalibrationBox(doc, 5, 5);
