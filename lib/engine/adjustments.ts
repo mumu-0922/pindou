@@ -27,6 +27,24 @@ export function sharpenPixels(
   return out;
 }
 
+export function sharpenSource(
+  data: Uint8ClampedArray, w: number, h: number, amount: number
+): void {
+  if (amount <= 0) return;
+  const a = amount / 100;
+  const copy = new Uint8ClampedArray(data);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = (y * w + x) * 4;
+      const t = i - w * 4, b = i + w * 4;
+      for (let c = 0; c < 3; c++) {
+        const lap = 4 * copy[i+c] - copy[t+c] - copy[b+c] - copy[i-4+c] - copy[i+4+c];
+        data[i+c] = Math.max(0, Math.min(255, Math.round(copy[i+c] + a * lap)));
+      }
+    }
+  }
+}
+
 export function adjustPixels(
   pixels: Pixel[],
   brightness: number,

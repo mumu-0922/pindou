@@ -7,7 +7,7 @@ import { downscale } from '@/lib/engine/downscaler';
 import type { PixelationMode } from '@/lib/engine/downscaler';
 import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
-import { adjustPixels, sharpenPixels } from '@/lib/engine/adjustments';
+import { adjustPixels, sharpenPixels, sharpenSource } from '@/lib/engine/adjustments';
 import { loadPalette } from '@/lib/data/palettes/loader';
 import { calculateUsage } from '@/lib/utils/usage-calculator';
 import { HistoryManager } from '@/lib/utils/history';
@@ -110,6 +110,7 @@ export default function Home() {
       const img = await loadImage(file);
       if (myId !== genId.current) return;
       const loaded = imageToPixels(img, bg);
+      sharpenSource(loaded.data, loaded.width, loaded.height, sharp);
       const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, pm);
 
       // Apply brightness/contrast/saturation + sharpening
