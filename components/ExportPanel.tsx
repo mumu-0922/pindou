@@ -16,7 +16,7 @@ export default function ExportPanel({ pattern, palette }: Props) {
   if (!pattern) return null;
   const fname = `bead-${pattern.metadata.brand}-${pattern.metadata.width}x${pattern.metadata.height}`;
   const handlePng = async () => {
-    const canvas = renderPatternToCanvas(pattern, palette, 20, true, true);
+    const canvas = renderPatternToCanvas(pattern, palette, 50, true, true);
     const blob = await canvasToBlob(canvas);
     downloadBlob(blob, `${fname}.png`);
   };
