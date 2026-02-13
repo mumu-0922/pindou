@@ -123,7 +123,7 @@ export default function Home() {
       const dithered = applyDithering(adjusted, w, h, dith, matchFn);
       let matched = dith === 'none' ? matchColors(adjusted, pal) : matchColors(dithered, pal);
 
-      // Limit max colors
+      // Limit max colors — re-dither with limited palette for clean blocks
       if (mc > 0 && mc < pal.length) {
         const freq = new Map<string, number>();
         for (const c of matched) freq.set(c.id, (freq.get(c.id) || 0) + 1);
@@ -131,7 +131,15 @@ export default function Home() {
           [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, mc).map(e => e[0])
         );
         const limitedPal = pal.filter(c => topIds.has(c.id));
-        matched = dith === 'none' ? matchColors(adjusted, limitedPal) : matchColors(dithered, limitedPal);
+        if (dith === 'none') {
+          matched = matchColors(adjusted, limitedPal);
+        } else {
+          const limitedMatchFn = (p: { r: number; g: number; b: number }) => {
+            const c = matchColor(p, limitedPal);
+            return { r: c.rgb[0], g: c.rgb[1], b: c.rgb[2] };
+          };
+          matched = matchColors(applyDithering(adjusted, w, h, dith, limitedMatchFn), limitedPal);
+        }
         pal = limitedPal;
       }
 

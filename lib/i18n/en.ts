@@ -96,7 +96,7 @@ export const en: Record<I18nKey, string> = {
   'param.contrast': 'Contrast',
   'param.saturation': 'Saturation',
   'param.sharpness': 'Sharpness',
-  'param.sharpnessHint': '💡 Small size tip: increase contrast +15~30, sharpness +30~60',
+  'param.sharpnessHint': '💡 Small size tip: increase contrast +15~30, sharpness +30~60, max colors 5~10',
   'param.reset': 'Reset',
   'param.boardSize': 'Board Size',
   'param.boardCount': 'Boards Needed',
