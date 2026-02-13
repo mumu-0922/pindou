@@ -3,6 +3,10 @@ import { useState } from 'react';
 import type { BeadPattern, CompiledBeadColor, PatchOp } from '@/lib/types/bead';
 import { HistoryManager } from '@/lib/utils/history';
 import { useI18n } from '@/lib/i18n/context';
+import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   pattern: BeadPattern;
@@ -51,45 +55,48 @@ export default function PatternEditor({ pattern, palette, history, selectedColor
     }
   };
 
-  const btn = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-30';
-
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <button onClick={handleUndo} disabled={!history.canUndo}
-          className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>
+        <Button variant="outline" size="sm" onClick={handleUndo} disabled={!history.canUndo}>
           {t('editor.undo')}
-        </button>
-        <button onClick={handleRedo} disabled={!history.canRedo}
-          className={`${btn} bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700`}>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleRedo} disabled={!history.canRedo}>
           {t('editor.redo')}
-        </button>
-        <span className="text-xs text-gray-400 dark:text-gray-500">{t('editor.hint')}</span>
+        </Button>
+        <span className="text-xs text-muted-foreground">{t('editor.hint')}</span>
       </div>
 
-      <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('editor.batchTitle')}</p>
+      <Separator />
+
+      <div className="space-y-2">
+        <Label className="text-xs uppercase tracking-wide">{t('editor.batchTitle')}</Label>
         <div className="flex items-center gap-2 flex-wrap">
-          <select value={replaceFrom} onChange={e => setReplaceFrom(e.target.value)}
-            className="border rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 min-w-0 flex-1">
-            <option value="">{t('editor.from')}</option>
-            {usedColors.map(c => (
-              <option key={c.id} value={c.id}>{c.code} {c.name}</option>
-            ))}
-          </select>
-          <span className="text-gray-400">→</span>
-          <select value={replaceTo} onChange={e => setReplaceTo(e.target.value)}
-            className="border rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 min-w-0 flex-1">
-            <option value="">{t('editor.to')}</option>
-            {palette.map(c => (
-              <option key={c.id} value={c.id}>{c.code} {c.name}</option>
-            ))}
-          </select>
-          <button onClick={handleBatchReplace}
-            disabled={!replaceFrom || !replaceTo || replaceFrom === replaceTo}
-            className={`${btn} bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700`}>
+          <Select value={replaceFrom} onValueChange={setReplaceFrom}>
+            <SelectTrigger className="min-w-0 flex-1">
+              <SelectValue placeholder={t('editor.from')} />
+            </SelectTrigger>
+            <SelectContent>
+              {usedColors.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.code} {c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground">→</span>
+          <Select value={replaceTo} onValueChange={setReplaceTo}>
+            <SelectTrigger className="min-w-0 flex-1">
+              <SelectValue placeholder={t('editor.to')} />
+            </SelectTrigger>
+            <SelectContent>
+              {palette.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.code} {c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button size="sm" onClick={handleBatchReplace}
+            disabled={!replaceFrom || !replaceTo || replaceFrom === replaceTo}>
             {t('editor.replaceAll')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

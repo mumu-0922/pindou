@@ -18,6 +18,7 @@ import PatternEditor from '@/components/PatternEditor';
 import ColorPicker from '@/components/ColorPicker';
 import BeadUsageList from '@/components/BeadUsageList';
 import ExportPanel from '@/components/ExportPanel';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const { t, lang, setLang } = useI18n();
@@ -181,13 +182,12 @@ export default function Home() {
             <a href="#tool" className="text-sm hover:underline">{t('nav.start')}</a>
             <a href="#features" className="text-sm hover:underline hidden sm:inline">{t('nav.features')}</a>
             <a href="#faq" className="text-sm hover:underline hidden sm:inline">{t('nav.faq')}</a>
-            <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
-              className={`px-2 py-1 rounded-lg text-sm font-medium ${dark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
+            <Button variant="ghost" size="sm" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
               {lang === 'zh' ? 'EN' : '中'}
-            </button>
-            <button onClick={() => setDark(!dark)} className={`p-2 rounded-lg ${dark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setDark(!dark)}>
               {dark ? '☀️' : '🌙'}
-            </button>
+            </Button>
           </div>
         </div>
       </nav>

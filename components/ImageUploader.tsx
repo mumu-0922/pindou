@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useState, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/context';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   onImageSelected: (file: File) => void;
@@ -44,10 +45,9 @@ export default function ImageUploader({ onImageSelected }: Props) {
             <img src={preview} alt="Preview"
               className="w-full sm:w-48 h-36 object-cover rounded-lg shadow-sm" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-              <button onClick={openPicker}
-                className="px-3 py-1.5 bg-white text-gray-800 rounded-lg text-sm font-medium shadow hover:bg-gray-100">
+              <Button variant="secondary" size="sm" onClick={openPicker}>
                 {t('upload.change')}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-2 min-w-0">
@@ -56,10 +56,9 @@ export default function ImageUploader({ onImageSelected }: Props) {
               <span>{t('upload.size')}: {meta.w}×{meta.h}px</span>
               <span>{t('upload.fileSize')}: {formatSize(meta.size)}</span>
             </div>
-            <button onClick={openPicker}
-              className="mt-1 self-start px-4 py-1.5 rounded-lg text-sm font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-colors">
+            <Button variant="outline" size="sm" className="mt-1 self-start" onClick={openPicker}>
               {t('upload.change')}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (

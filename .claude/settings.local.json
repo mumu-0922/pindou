@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_console_messages"
     ]
   }
 }
