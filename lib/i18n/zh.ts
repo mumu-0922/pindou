@@ -105,6 +105,8 @@ export const zh = {
   'param.brightness': '亮度',
   'param.contrast': '对比度',
   'param.saturation': '饱和度',
+  'param.sharpness': '锐度',
+  'param.sharpnessHint': '💡 小尺寸建议：提高对比度 +15~30，锐度 +30~60',
   'param.reset': '重置',
   'param.boardSize': '拼板尺寸',
   'param.boardCount': '需要拼板',

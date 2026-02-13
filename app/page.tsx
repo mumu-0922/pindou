@@ -7,7 +7,7 @@ import { downscale } from '@/lib/engine/downscaler';
 import type { PixelationMode } from '@/lib/engine/downscaler';
 import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
-import { adjustPixels } from '@/lib/engine/adjustments';
+import { adjustPixels, sharpenPixels } from '@/lib/engine/adjustments';
 import { loadPalette } from '@/lib/data/palettes/loader';
 import { calculateUsage } from '@/lib/utils/usage-calculator';
 import { HistoryManager } from '@/lib/utils/history';
@@ -33,6 +33,7 @@ export default function Home() {
   const [brightness, setBrightness] = useState(0);
   const [contrast, setContrast] = useState(0);
   const [saturation, setSaturation] = useState(0);
+  const [sharpness, setSharpness] = useState(0);
   const [maxColors, setMaxColors] = useState(0);
   const [pixMode, setPixMode] = useState<PixelationMode>('average');
   const [lockRatio, setLockRatio] = useState(true);
@@ -95,7 +96,7 @@ export default function Home() {
     { q: t('faq5.q'), a: t('faq5.a') },
   ];
 
-  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null, pm: PixelationMode = 'average') => {
+  const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null, pm: PixelationMode = 'average', sharp: number = 0) => {
     const myId = ++genId.current;
     setLoading(true);
     try {
@@ -111,8 +112,8 @@ export default function Home() {
       const loaded = imageToPixels(img, bg);
       const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, pm);
 
-      // Apply brightness/contrast/saturation
-      const adjusted = adjustPixels(pixels, bri, con, sat);
+      // Apply brightness/contrast/saturation + sharpening
+      const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
 
       const matchFn = (p: { r: number; g: number; b: number }) => {
         const c = matchColor(p, pal);
@@ -161,16 +162,16 @@ export default function Home() {
       setAspectRatio(ar);
       const newH = Math.round(width / ar);
       setHeight(Math.max(1, Math.min(200, newH)));
-      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode);
+      generate(file, brand, width, Math.max(1, Math.min(200, newH)), dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness);
     };
     img.src = URL.createObjectURL(file);
-  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, generate]);
+  }, [brand, width, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness, generate]);
 
   // 参数变更自动重新生成
   useEffect(() => {
-    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode);
+    if (imageFile) generate(imageFile, brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode]);
+  }, [brand, width, height, dithering, background, brightness, contrast, saturation, maxColors, customIds, pixMode, sharpness]);
 
   // 品牌切换时重置自定义色板
   useEffect(() => {
@@ -310,6 +311,7 @@ export default function Home() {
             onBrightnessChange={setBrightness} onContrastChange={setContrast}
             onSaturationChange={setSaturation} onMaxColorsChange={setMaxColors}
             onPixModeChange={setPixMode} onLockRatioChange={setLockRatio}
+            sharpness={sharpness} onSharpnessChange={setSharpness}
           />
 
           {fullPalette.length > 0 && (

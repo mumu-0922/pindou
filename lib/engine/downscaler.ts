@@ -87,26 +87,30 @@ function downscaleDominant(
       const sx1 = Math.min(Math.ceil((dx + 1) * scaleX), srcW);
       const sy1 = Math.min(Math.ceil((dy + 1) * scaleY), srcH);
 
-      // Quantize to 5-bit per channel for frequency counting
-      const freq = new Map<number, { count: number; r: number; g: number; b: number }>();
+      // Quantize to 6-bit per channel for frequency counting (64 levels, 4x precision vs 5-bit)
+      const freq = new Map<number, { count: number; sumR: number; sumG: number; sumB: number }>();
       let bestKey = 0, bestCount = 0;
       for (let sy = sy0; sy < sy1; sy++) {
         for (let sx = sx0; sx < sx1; sx++) {
           const i = (sy * srcW + sx) * 4;
           const r = data[i], g = data[i + 1], b = data[i + 2];
-          const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+          const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
           const entry = freq.get(key);
           if (entry) {
-            entry.count++;
+            entry.count++; entry.sumR += r; entry.sumG += g; entry.sumB += b;
             if (entry.count > bestCount) { bestCount = entry.count; bestKey = key; }
           } else {
-            freq.set(key, { count: 1, r, g, b });
+            freq.set(key, { count: 1, sumR: r, sumG: g, sumB: b });
             if (1 > bestCount) { bestCount = 1; bestKey = key; }
           }
         }
       }
       const best = freq.get(bestKey)!;
-      result[dy * dstW + dx] = { r: best.r, g: best.g, b: best.b };
+      result[dy * dstW + dx] = {
+        r: Math.round(best.sumR / best.count),
+        g: Math.round(best.sumG / best.count),
+        b: Math.round(best.sumB / best.count),
+      };
     }
   }
   return result;

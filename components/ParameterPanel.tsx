@@ -21,6 +21,7 @@ interface Props {
   brightness: number;
   contrast: number;
   saturation: number;
+  sharpness: number;
   maxColors: number;
   pixMode: PixelationMode;
   lockRatio: boolean;
@@ -33,6 +34,7 @@ interface Props {
   onBrightnessChange: (v: number) => void;
   onContrastChange: (v: number) => void;
   onSaturationChange: (v: number) => void;
+  onSharpnessChange: (v: number) => void;
   onMaxColorsChange: (v: number) => void;
   onPixModeChange: (v: PixelationMode) => void;
   onLockRatioChange: (v: boolean) => void;
@@ -117,6 +119,7 @@ export default function ParameterPanel(props: Props) {
     props.onBrightnessChange(0);
     props.onContrastChange(0);
     props.onSaturationChange(0);
+    props.onSharpnessChange(0);
   };
 
   return (
@@ -213,10 +216,14 @@ export default function ParameterPanel(props: Props) {
           <SliderRow label={t('param.brightness')} value={props.brightness} min={-50} max={50} onChange={props.onBrightnessChange} />
           <SliderRow label={t('param.contrast')} value={props.contrast} min={-50} max={50} onChange={props.onContrastChange} />
           <SliderRow label={t('param.saturation')} value={props.saturation} min={-50} max={50} onChange={props.onSaturationChange} />
-          {(props.brightness !== 0 || props.contrast !== 0 || props.saturation !== 0) && (
+          <SliderRow label={t('param.sharpness')} value={props.sharpness} min={0} max={100} onChange={props.onSharpnessChange} />
+          {(props.brightness !== 0 || props.contrast !== 0 || props.saturation !== 0 || props.sharpness !== 0) && (
             <Button variant="link" size="sm" onClick={resetBCS} className="text-xs text-pink-500 dark:text-pink-400 p-0 h-auto">
               ↺ {t('param.reset')}
             </Button>
+          )}
+          {props.width * props.height <= 35 * 35 && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">{t('param.sharpnessHint')}</p>
           )}
         </div>
       )}
