@@ -291,9 +291,13 @@ export default function Home() {
       </section>
 
       {/* Tool Section */}
-      <section id="tool" className={`py-16 px-6 ${dark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto space-y-6">
-          <h2 className="text-3xl font-bold text-center">{t('tool.title')}</h2>
+      <section id="tool" className={`py-16 px-6 relative overflow-hidden ${dark ? 'bg-gray-950' : 'bg-gradient-to-b from-pink-50/50 to-gray-50'}`}>
+        {/* 像素风点阵背景 */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.015]" style={{ backgroundImage: 'radial-gradient(circle, #F472B6 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="max-w-7xl mx-auto space-y-6 relative">
+          <h2 className="text-3xl font-bold text-center">
+            <span className="bg-gradient-to-r from-pink-500 to-fuchsia-500 bg-clip-text text-transparent">{t('tool.title')}</span>
+          </h2>
 
           <ImageUploader onImageSelected={handleImageSelected} />
 
@@ -344,21 +348,21 @@ export default function Home() {
                   localStorage.setItem('pindou-focus-data', JSON.stringify({ pattern, palette }));
                   window.location.href = '/focus';
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500 text-white font-medium hover:bg-pink-600 transition text-sm"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-500 text-white font-medium hover:from-pink-500 hover:to-fuchsia-600 transition shadow-md shadow-pink-200 dark:shadow-pink-900/30 text-sm"
               >
                 {t('focus.enter')}
               </button>
             </div>
           )}
           {pattern && (
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${dark ? 'bg-gray-800/50 border-pink-900/30' : 'bg-white/80 shadow-sm border-pink-200'}`}>
                 <span>🎨</span> <span>{t('param.colorCount')}: <b className="text-pink-500 dark:text-pink-400">{colorCount}</b></span>
               </div>
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${dark ? 'bg-gray-800/50 border-pink-900/30' : 'bg-white/80 shadow-sm border-pink-200'}`}>
                 <span>📐</span> <span>{width}×{height} = <b className="text-pink-500 dark:text-pink-400">{(width * height).toLocaleString()}</b> {t('usage.unit')}</span>
               </div>
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${dark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${dark ? 'bg-gray-800/50 border-pink-900/30' : 'bg-white/80 shadow-sm border-pink-200'}`}>
                 <span>🧩</span> <span>{t('param.boardCount')}: <b className="text-pink-500 dark:text-pink-400">{Math.ceil(width / 29) * Math.ceil(height / 29)}</b> {t('param.boardUnit')}</span>
               </div>
             </div>

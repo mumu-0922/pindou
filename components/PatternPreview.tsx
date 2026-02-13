@@ -105,9 +105,18 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
   };
 
   if (!pattern) return (
-    <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-600">
-      <div className="text-5xl mb-3">🎨</div>
-      <p>{t('preview.empty')}</p>
+    <div className="flex flex-col items-center justify-center py-24 relative overflow-hidden">
+      {/* 像素风装饰 */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, #F472B6 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+      <div className="absolute top-6 left-8 text-pink-200 dark:text-pink-900 select-none opacity-50 text-sm">✦ ✧ ✦ ✧</div>
+      <div className="absolute bottom-6 right-8 text-fuchsia-200 dark:text-fuchsia-900 select-none opacity-50 text-sm">✧ ✦ ✧ ✦</div>
+      <div className="relative space-y-4 text-center">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-pink-100 to-fuchsia-100 dark:from-pink-900/30 dark:to-fuchsia-900/30 shadow-inner text-5xl">
+          🎨
+        </div>
+        <p className="text-sm font-medium bg-gradient-to-r from-pink-400 to-fuchsia-400 bg-clip-text text-transparent">{t('preview.empty')}</p>
+        <p className="text-xs text-pink-300 dark:text-pink-700">↑ {t('upload.drag')}</p>
+      </div>
     </div>
   );
 
@@ -132,7 +141,7 @@ export default function PatternPreview({ pattern, palette, onCellClick }: Props)
       </div>
       <div
         ref={wrapRefCb}
-        className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 cursor-grab select-none"
+        className="overflow-auto rounded-2xl border border-pink-200 dark:border-pink-900/30 bg-white dark:bg-gray-950 cursor-grab select-none shadow-inner"
         style={{ maxHeight: '70vh' }}
       >
         <div style={{ width: pattern.metadata.width * 20 * zoom, height: pattern.metadata.height * 20 * zoom }}>

@@ -64,10 +64,10 @@ function NumInput({ value, onChange, min = 1, max = 200 }: {
   );
 }
 
-function SectionHeader({ title, open, onToggle }: { title: string; open: boolean; onToggle: () => void }) {
+function SectionHeader({ icon, title, open, onToggle }: { icon: string; title: string; open: boolean; onToggle: () => void }) {
   return (
-    <button onClick={onToggle} className="w-full flex items-center justify-between py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-      {title}
+    <button onClick={onToggle} className="w-full flex items-center justify-between py-2.5 text-sm font-bold text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 transition-colors">
+      <span className="flex items-center gap-1.5">{icon} {title}</span>
       <span className={`transition-transform duration-200 text-xs ${open ? 'rotate-180' : ''}`}>▼</span>
     </button>
   );
@@ -120,9 +120,14 @@ export default function ParameterPanel(props: Props) {
   };
 
   return (
-    <div className="card-premium p-4 space-y-1 bg-white dark:bg-gray-900">
+    <div className="card-premium p-5 space-y-1 bg-gradient-to-br from-white to-pink-50/50 dark:from-gray-900 dark:to-pink-950/10">
       {/* Brand row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-lg">⚙️</span>
+        <span className="text-sm font-bold bg-gradient-to-r from-pink-500 to-fuchsia-500 bg-clip-text text-transparent">{t('param.brand')}</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-pink-200 to-transparent dark:from-pink-800" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pb-3 border-b border-pink-100 dark:border-pink-900/30">
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs uppercase tracking-wide">{t('param.brand')}</Label>
           <Select value={props.brand} onValueChange={v => props.onBrandChange(v as BeadBrand)}>
@@ -176,9 +181,9 @@ export default function ParameterPanel(props: Props) {
       </div>
 
       {/* Size section */}
-      <SectionHeader title={t('param.sizeGroup')} open={openSize} onToggle={() => setOpenSize(!openSize)} />
+      <SectionHeader icon="📐" title={t('param.sizeGroup')} open={openSize} onToggle={() => setOpenSize(!openSize)} />
       {openSize && (
-        <div className="pb-3 border-b border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="pb-3 border-b border-pink-100 dark:border-pink-900/30 space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs uppercase tracking-wide">{t('param.width')}</Label>
@@ -193,7 +198,7 @@ export default function ParameterPanel(props: Props) {
               <Label htmlFor="lock-ratio" className="text-sm cursor-pointer">{t('param.lock')}</Label>
             </div>
           </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground bg-gradient-to-r from-pink-50 to-fuchsia-50 dark:from-pink-950/20 dark:to-fuchsia-950/20 rounded-xl px-3 py-2.5 border border-pink-100 dark:border-pink-900/30">
             <span>{t('param.boardSize')}: {boardSize}×{boardSize}</span>
             <span>{t('param.boardCount')}: <b className="text-pink-500 dark:text-pink-400">{boardCount}</b> {t('param.boardUnit')}</span>
             <span>{t('param.totalBeads')}: <b className="text-pink-500 dark:text-pink-400">{totalBeads.toLocaleString()}</b></span>
@@ -202,9 +207,9 @@ export default function ParameterPanel(props: Props) {
       )}
 
       {/* Image adjustments */}
-      <SectionHeader title={t('param.imageGroup')} open={openImage} onToggle={() => setOpenImage(!openImage)} />
+      <SectionHeader icon="🎨" title={t('param.imageGroup')} open={openImage} onToggle={() => setOpenImage(!openImage)} />
       {openImage && (
-        <div className="pb-3 border-b border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="pb-3 border-b border-pink-100 dark:border-pink-900/30 space-y-3">
           <SliderRow label={t('param.brightness')} value={props.brightness} min={-50} max={50} onChange={props.onBrightnessChange} />
           <SliderRow label={t('param.contrast')} value={props.contrast} min={-50} max={50} onChange={props.onContrastChange} />
           <SliderRow label={t('param.saturation')} value={props.saturation} min={-50} max={50} onChange={props.onSaturationChange} />
