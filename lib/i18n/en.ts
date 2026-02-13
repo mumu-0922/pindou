@@ -123,4 +123,13 @@ export const en: Record<I18nKey, string> = {
   'usage.code': 'Code',
   'usage.name': 'Name',
   'usage.count': 'Count',
+
+  'brand.perler': 'Perler',
+  'brand.hama': 'Hama',
+  'brand.artkal-s': 'Artkal S',
+  'brand.mard': 'MARD',
+  'brand.coco': 'COCO',
+  'brand.manman': 'Manman',
+  'brand.panpan': 'Panpan',
+  'brand.mixiaowo': 'Mixiaowo',
 };

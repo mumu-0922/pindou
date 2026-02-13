@@ -140,6 +140,15 @@ export const zh = {
   'usage.code': '编号',
   'usage.name': '名称',
   'usage.count': '数量',
+
+  'brand.perler': 'Perler',
+  'brand.hama': 'Hama',
+  'brand.artkal-s': 'Artkal S',
+  'brand.mard': 'MARD',
+  'brand.coco': 'COCO',
+  'brand.manman': '漫漫',
+  'brand.panpan': '盼盼',
+  'brand.mixiaowo': '咪小窝',
 } as const;
 
 export type I18nKey = keyof typeof zh;

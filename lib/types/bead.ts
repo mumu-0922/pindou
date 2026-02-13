@@ -1,4 +1,4 @@
-export type BeadBrand = 'perler' | 'hama' | 'artkal-s' | 'artkal-r' | 'artkal-c' | 'artkal-a';
+export type BeadBrand = 'perler' | 'hama' | 'artkal-s' | 'artkal-r' | 'artkal-c' | 'artkal-a' | 'mard' | 'coco' | 'manman' | 'panpan' | 'mixiaowo';
 
 export type DitheringMode = 'none' | 'floyd-steinberg' | 'ordered';
 

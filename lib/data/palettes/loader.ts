@@ -10,5 +10,5 @@ export async function loadPalette(brand: BeadBrand): Promise<CompiledBeadColor[]
 }
 
 export function getAvailableBrands(): BeadBrand[] {
-  return ['perler', 'hama', 'artkal-s'];
+  return ['perler', 'hama', 'artkal-s', 'mard', 'coco', 'manman', 'panpan', 'mixiaowo'];
 }
