@@ -20,9 +20,13 @@ export default function ImageUploader({ onImageSelected }: Props) {
   const [meta, setMeta] = useState<{ name: string; w: number; h: number; size: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const prevUrl = useRef<string | null>(null);
+
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
+    if (prevUrl.current) URL.revokeObjectURL(prevUrl.current);
     const url = URL.createObjectURL(file);
+    prevUrl.current = url;
     setPreview(url);
     const img = new Image();
     img.onload = () => setMeta({ name: file.name, w: img.naturalWidth, h: img.naturalHeight, size: file.size });

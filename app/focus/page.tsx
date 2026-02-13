@@ -101,52 +101,49 @@ export default function FocusPage() {
     const clickedId = pattern.cells[row][col].colorId;
     if (clickedId !== currentColorId) return;
 
-    // BFS 4-connected
-    const visited = new Set<string>();
-    const queue = [`${row},${col}`];
-    visited.add(`${row},${col}`);
-    while (queue.length) {
-      const key = queue.shift()!;
-      const [cr, cc] = key.split(',').map(Number);
+    // BFS 4-connected — 数字索引队列，O(n) 替代 O(n²)
+    const visited = new Set<number>();
+    const bfsQueue: number[] = [row * w + col];
+    let qi = 0;
+    visited.add(row * w + col);
+    while (qi < bfsQueue.length) {
+      const idx = bfsQueue[qi++];
+      const cr = Math.floor(idx / w), cc = idx % w;
       for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
         const nr = cr + dr, nc = cc + dc;
-        const nk = `${nr},${nc}`;
-        if (nr >= 0 && nr < h && nc >= 0 && nc < w && !visited.has(nk) && pattern.cells[nr][nc].colorId === clickedId) {
-          visited.add(nk);
-          queue.push(nk);
+        const ni = nr * w + nc;
+        if (nr >= 0 && nr < h && nc >= 0 && nc < w && !visited.has(ni) && pattern.cells[nr][nc].colorId === clickedId) {
+          visited.add(ni);
+          bfsQueue.push(ni);
         }
       }
     }
 
     // Toggle: if all in region completed, uncomplete; else complete all
-    const allDone = [...visited].every(k => completed.has(k));
+    const visitedKeys = [...visited].map(i => `${Math.floor(i / w)},${i % w}`);
+    const allDone = visitedKeys.every(k => completed.has(k));
     setCompleted(prev => {
       const next = new Set(prev);
-      for (const k of visited) {
+      for (const k of visitedKeys) {
         if (allDone) next.delete(k); else next.add(k);
       }
       return next;
     });
+  }, [pattern, currentColorId, completed, zoom, pan]);
 
-    // Check if current color fully done after marking
-    if (!allDone) {
+  // Detect color completion via effect (avoids stale closure)
+  useEffect(() => {
+    if (celebrating) return;
+    const cur = colorProgress.find(c => c.color.id === currentColorId);
+    if (cur && cur.total > 0 && cur.done === cur.total) {
+      setCelebrating(true);
       setTimeout(() => {
-        // Recheck after state update
-        const cp = colorProgress.find(c => c.color.id === currentColorId);
-        if (!cp) return;
-        const newDone = cp.done + visited.size;
-        if (newDone >= cp.total) {
-          setCelebrating(true);
-          setTimeout(() => {
-            setCelebrating(false);
-            // Auto switch to next incomplete color
-            const nextColor = colorProgress.find(c => c.color.id !== currentColorId && c.done < c.total);
-            if (nextColor) setCurrentColorId(nextColor.color.id);
-          }, 1500);
-        }
-      }, 50);
+        setCelebrating(false);
+        const next = colorProgress.find(c => c.done < c.total);
+        if (next) setCurrentColorId(next.color.id);
+      }, 1500);
     }
-  }, [pattern, currentColorId, completed, colorProgress, zoom, pan]);
+  }, [colorProgress, currentColorId, celebrating]);
 
   // Canvas rendering
   useEffect(() => {

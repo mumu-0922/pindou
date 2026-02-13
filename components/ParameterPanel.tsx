@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BeadBrand, DitheringMode } from '@/lib/types/bead';
 import type { BackgroundMode } from '@/lib/engine/image-loader';
 import type { PixelationMode } from '@/lib/engine/downscaler';
@@ -42,9 +42,7 @@ function NumInput({ value, onChange, min = 1, max = 200 }: {
   value: number; onChange: (v: number) => void; min?: number; max?: number;
 }) {
   const [raw, setRaw] = useState(String(value));
-  if (raw !== '' && Number(raw) !== value) {
-    if (raw !== '' && !isNaN(Number(raw)) && Number(raw) !== value) setRaw(String(value));
-  }
+  useEffect(() => { setRaw(String(value)); }, [value]);
   return (
     <Input
       type="text"
@@ -104,14 +102,14 @@ export default function ParameterPanel(props: Props) {
   const handleWidthChange = (w: number) => {
     props.onWidthChange(w);
     if (props.lockRatio && props.aspectRatio > 0) {
-      props.onHeightChange(Math.round(w / props.aspectRatio));
+      props.onHeightChange(Math.max(1, Math.min(200, Math.round(w / props.aspectRatio))));
     }
   };
 
   const handleHeightChange = (h: number) => {
     props.onHeightChange(h);
     if (props.lockRatio && props.aspectRatio > 0) {
-      props.onWidthChange(Math.round(h * props.aspectRatio));
+      props.onWidthChange(Math.max(1, Math.min(200, Math.round(h * props.aspectRatio))));
     }
   };
 

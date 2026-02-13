@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { BeadPattern, BeadBrand, DitheringMode, CompiledBeadColor, BeadUsageItem, PatchOp } from '@/lib/types/bead';
 import type { BackgroundMode } from '@/lib/engine/image-loader';
 import { loadImage, imageToPixels } from '@/lib/engine/image-loader';
@@ -46,6 +46,7 @@ export default function Home() {
   const [customIds, setCustomIds] = useState<Set<string> | null>(null);
   const [showPaletteEditor, setShowPaletteEditor] = useState(false);
   const [fullPalette, setFullPalette] = useState<CompiledBeadColor[]>([]);
+  const genId = useRef(0);
 
   const [history] = useState(() => new HistoryManager());
 
@@ -95,14 +96,18 @@ export default function Home() {
   ];
 
   const generate = useCallback(async (file: File, b: BeadBrand, w: number, h: number, dith: DitheringMode, bg: BackgroundMode, bri: number, con: number, sat: number, mc: number, cIds: Set<string> | null = null, pm: PixelationMode = 'average') => {
+    const myId = ++genId.current;
     setLoading(true);
     try {
       const fullPal = await loadPalette(b);
+      if (myId !== genId.current) return;
       setFullPalette(fullPal);
       let pal = cIds && cIds.size > 0 ? fullPal.filter(c => cIds.has(c.id)) : fullPal;
+      if (pal.length === 0) pal = fullPal;
 
       // maxColors: keep only the top N most-used colors after initial match
       const img = await loadImage(file);
+      if (myId !== genId.current) return;
       const loaded = imageToPixels(img, bg);
       const pixels = downscale(loaded.data, loaded.width, loaded.height, w, h, pm);
 
@@ -128,6 +133,7 @@ export default function Home() {
         pal = limitedPal;
       }
 
+      if (myId !== genId.current) return;
       setPalette(pal);
 
       const cells = Array.from({ length: h }, (_, y) =>
@@ -141,7 +147,7 @@ export default function Home() {
       });
       history.clear();
     } finally {
-      setLoading(false);
+      if (myId === genId.current) setLoading(false);
     }
   }, [history]);
 
@@ -150,6 +156,7 @@ export default function Home() {
     // Compute aspect ratio from image
     const img = new Image();
     img.onload = () => {
+      URL.revokeObjectURL(img.src);
       const ar = img.naturalWidth / img.naturalHeight;
       setAspectRatio(ar);
       const newH = Math.round(width / ar);

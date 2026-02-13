@@ -29,6 +29,7 @@ export function buildPaletteMap(palette: CompiledBeadColor[]): { labColors: LabC
 }
 
 export function matchColor(pixel: DownscaledPixel, palette: CompiledBeadColor[]): CompiledBeadColor {
+  if (palette.length === 0) throw new Error('Palette is empty');
   const pixelLab = rgbToLab(pixel.r, pixel.g, pixel.b);
   let bestMatch = palette[0];
   let bestDist = Infinity;
