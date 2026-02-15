@@ -203,6 +203,20 @@ export default function Home() {
 
       const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
 
+      // Noise cleanup should be allowed to remove the darkest outline color when it's clearly
+      // an isolated speckle; keep palette limiting protection separate from cleanup protection.
+      const noiseProtectedIds = new Set(protectedColorIds);
+      if (useLowResOptimize && pal.length > 0) {
+        let darkestId: string | undefined;
+        let darkestL = Infinity;
+        for (const c of pal) {
+          const l = lumaMap.get(c.id) ?? 255;
+          if (l < darkestL) { darkestL = l; darkestId = c.id; }
+        }
+        if (darkestId) noiseProtectedIds.delete(darkestId);
+      }
+
+
       // 线稿格子：只在“确认为线稿”的格子里，把颜色重匹配到最暗的一小撮色里，避免整图被涂黑。
       if (strokeCoreMask) {
         const darkCandidates = [...pal]
@@ -220,7 +234,7 @@ export default function Home() {
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
       );
       const noiseCleaned = useLowResOptimize
-        ? removeIsolatedNoise(rawCells, w, h, 2, protectedColorIds, lumaMap)
+        ? removeIsolatedNoise(rawCells, w, h, 2, noiseProtectedIds, lumaMap, strokeMask)
         : rawCells;
       const cells = useLowResOptimize
         ? majorityFilter(noiseCleaned, w, h, strokeMask)

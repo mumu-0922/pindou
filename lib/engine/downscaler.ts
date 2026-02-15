@@ -148,17 +148,14 @@ function downscaleEdgeAware(
       const rx = Math.max(1, (sx1 - sx0) / 2);
       const ry = Math.max(1, (sy1 - sy0) / 2);
 
-      // Two-histogram strategy:
-      // - Fill histogram selects the dominant block color.
-      // - Edge histogram selects the dominant edge color (outline candidate).
-      const freq = new Map<number, {
-        fillWeight: number;
-        fillSumR: number; fillSumG: number; fillSumB: number;
-        edgeWeight: number;
-        edgeSumR: number; edgeSumG: number; edgeSumB: number;
-      }>();
-      let bestFillKey = 0;
-      let bestFillWeight = -1;
+      // Fill: gamma-corrected (linear RGB) average, center-weighted.
+      // Edge: weighted histogram of high-contrast samples, to keep outlines crisp.
+      let fillLinR = 0;
+      let fillLinG = 0;
+      let fillLinB = 0;
+      let fillWeightTotal = 0;
+
+      const edgeBins = new Map<number, { weight: number; sumR: number; sumG: number; sumB: number }>();
       let bestEdgeKey = 0;
       let bestEdgeWeight = -1;
       let edgeWeightTotal = 0;
@@ -169,77 +166,70 @@ function downscaleEdgeAware(
         for (let sx = sx0; sx < sx1; sx++) {
           const i = (sy * srcW + sx) * 4;
           const r = data[i], g = data[i + 1], b = data[i + 2];
+
           const lum = luminanceAt(sx, sy);
           const rightLum = luminanceAt(Math.min(sx + 1, srcW - 1), sy);
           const bottomLum = luminanceAt(sx, Math.min(sy + 1, srcH - 1));
           const edgeStrength = (Math.abs(lum - rightLum) + Math.abs(lum - bottomLum)) / 255;
+
           const nx = (sx - cx) / rx;
           const ny = (sy - cy) / ry;
           const centerWeight = 1 + Math.max(0, 1 - (nx * nx + ny * ny)) * 0.35;
-          const fillW = centerWeight;
 
-          // Quantize to 6-bit per channel for stable histogram bins (same as dominant mode).
-          const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
-          const entry = freq.get(key);
-          const bin = entry ?? {
-            fillWeight: 0,
-            fillSumR: 0, fillSumG: 0, fillSumB: 0,
-            edgeWeight: 0,
-            edgeSumR: 0, edgeSumG: 0, edgeSumB: 0,
-          };
-          bin.fillWeight += fillW;
-          bin.fillSumR += r * fillW;
-          bin.fillSumG += g * fillW;
-          bin.fillSumB += b * fillW;
-          if (!entry) freq.set(key, bin);
-
-          if (bin.fillWeight > bestFillWeight) {
-            bestFillWeight = bin.fillWeight;
-            bestFillKey = key;
-          }
+          fillLinR += srgbToLinear(r) * centerWeight;
+          fillLinG += srgbToLinear(g) * centerWeight;
+          fillLinB += srgbToLinear(b) * centerWeight;
+          fillWeightTotal += centerWeight;
 
           if (edgeStrength >= edgeMin) {
-            // Use only edge energy here; avoids white fill dominating.
+            // Quantize to 6-bit per channel for stable bins (same as dominant mode).
+            const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
             const edgeW = centerWeight * Math.min(2, edgeStrength);
-            bin.edgeWeight += edgeW;
-            bin.edgeSumR += r * edgeW;
-            bin.edgeSumG += g * edgeW;
-            bin.edgeSumB += b * edgeW;
-            edgeWeightTotal += edgeW;
-            edgePixels += 1;
-            if (bin.edgeWeight > bestEdgeWeight) {
-              bestEdgeWeight = bin.edgeWeight;
+            let bin = edgeBins.get(key);
+            if (bin) {
+              bin.weight += edgeW;
+              bin.sumR += r * edgeW;
+              bin.sumG += g * edgeW;
+              bin.sumB += b * edgeW;
+            } else {
+              bin = { weight: edgeW, sumR: r * edgeW, sumG: g * edgeW, sumB: b * edgeW };
+              edgeBins.set(key, bin);
+            }
+            if (bin.weight > bestEdgeWeight) {
+              bestEdgeWeight = bin.weight;
               bestEdgeKey = key;
             }
+            edgeWeightTotal += edgeW;
+            edgePixels += 1;
           }
+
           sampleCount += 1;
         }
       }
 
-      const fill = freq.get(bestFillKey);
-      if (!fill || fill.fillWeight <= 0 || sampleCount <= 0) {
+      if (fillWeightTotal <= 0 || sampleCount <= 0) {
         result[dy * dstW + dx] = { r: 0, g: 0, b: 0 };
         continue;
       }
 
-      const fillR = fill.fillSumR / fill.fillWeight;
-      const fillG = fill.fillSumG / fill.fillWeight;
-      const fillB = fill.fillSumB / fill.fillWeight;
+      const fillR = linearToSrgb(fillLinR / fillWeightTotal);
+      const fillG = linearToSrgb(fillLinG / fillWeightTotal);
+      const fillB = linearToSrgb(fillLinB / fillWeightTotal);
       const fillLuma = 0.2126 * fillR + 0.7152 * fillG + 0.0722 * fillB;
 
       const edgeRatio = edgePixels / sampleCount;
-      const edge = edgeWeightTotal > 0 ? freq.get(bestEdgeKey) : undefined;
-      const edgeShare = edge && edgeWeightTotal > 0 ? (edge.edgeWeight / edgeWeightTotal) : 0;
+      const edgeShare = edgeWeightTotal > 0 ? bestEdgeWeight / edgeWeightTotal : 0;
+      const edge = edgeWeightTotal > 0 ? edgeBins.get(bestEdgeKey) : undefined;
 
       if (
         edge &&
-        edge.edgeWeight > 0 &&
+        edge.weight > 0 &&
         edgeRatio >= edgeRatioMin &&
         edgeShare >= edgeShareMin
       ) {
-        const edgeR = edge.edgeSumR / edge.edgeWeight;
-        const edgeG = edge.edgeSumG / edge.edgeWeight;
-        const edgeB = edge.edgeSumB / edge.edgeWeight;
+        const edgeR = edge.sumR / edge.weight;
+        const edgeG = edge.sumG / edge.weight;
+        const edgeB = edge.sumB / edge.weight;
         const edgeLuma = 0.2126 * edgeR + 0.7152 * edgeG + 0.0722 * edgeB;
         if (edgeLuma <= fillLuma - edgeLumaDelta) {
           result[dy * dstW + dx] = { r: Math.round(edgeR), g: Math.round(edgeG), b: Math.round(edgeB) };
@@ -247,9 +237,10 @@ function downscaleEdgeAware(
         }
       }
 
-      result[dy * dstW + dx] = { r: Math.round(fillR), g: Math.round(fillG), b: Math.round(fillB) };
+      result[dy * dstW + dx] = { r: fillR, g: fillG, b: fillB };
     }
   }
 
   return result;
 }
+

@@ -53,7 +53,8 @@ export function removeIsolatedNoise(
   height: number,
   minComponentSize: number = 2,
   protectedColorIds: Set<string> = new Set<string>(),
-  colorLumaMap?: Map<string, number>
+  colorLumaMap?: Map<string, number>,
+  preserveHighContrastMask?: boolean[],
 ): BeadCell[][] {
   if (width <= 0 || height <= 0 || minComponentSize < 1) return cells;
   const preserveContrastThreshold = 42;
@@ -108,7 +109,12 @@ export function removeIsolatedNoise(
     }
 
     if (neighborCount.size === 0) continue;
-    if (maxContrast >= preserveContrastThreshold) continue;
+    if (maxContrast >= preserveContrastThreshold) {
+      const shouldPreserve = preserveHighContrastMask
+        ? component.some(idx => preserveHighContrastMask[idx])
+        : true;
+      if (shouldPreserve) continue;
+    }
 
     let replaceColor = targetColor;
     let best = -1;
