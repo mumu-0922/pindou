@@ -8,8 +8,9 @@ export function extractStrokeMask(
   srcH: number,
   dstW: number,
   dstH: number,
-  lumaThreshold = 50,
-  coverageThreshold = 0.20,
+  lumaThreshold = 115,
+  coverageThreshold = 0.06,
+  dilateRadius = 1,
 ): boolean[] {
   const mask: boolean[] = new Array(dstW * dstH);
   for (let dy = 0; dy < dstH; dy++) {
@@ -23,6 +24,8 @@ export function extractStrokeMask(
         for (let sx = sx0; sx < sx1; sx++) {
           total++;
           const off = (sy * srcW + sx) * 4;
+          const a = srcData[off + 3];
+          if (a < 10) continue;
           const luma = 0.2126 * srcData[off] + 0.7152 * srcData[off + 1] + 0.0722 * srcData[off + 2];
           if (luma < lumaThreshold) count++;
         }
@@ -30,5 +33,25 @@ export function extractStrokeMask(
       mask[dy * dstW + dx] = total > 0 && count / total > coverageThreshold;
     }
   }
-  return mask;
+  return dilateRadius > 0 ? dilateMask(mask, dstW, dstH, dilateRadius) : mask;
+}
+
+function dilateMask(mask: boolean[], width: number, height: number, radius: number): boolean[] {
+  const r = Math.max(1, Math.min(3, radius));
+  const out = mask.slice();
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!mask[y * width + x]) continue;
+      for (let dy = -r; dy <= r; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= height) continue;
+        for (let dx = -r; dx <= r; dx++) {
+          const nx = x + dx;
+          if (nx < 0 || nx >= width) continue;
+          out[ny * width + nx] = true;
+        }
+      }
+    }
+  }
+  return out;
 }

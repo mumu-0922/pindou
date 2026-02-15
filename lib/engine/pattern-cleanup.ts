@@ -23,6 +23,7 @@ export function majorityFilter(
   width: number,
   height: number,
   strokeMask?: boolean[],
+  minMajority: number = 6,
 ): BeadCell[][] {
   const output = cells.map(row => row.map(cell => ({ ...cell })));
   for (let y = 0; y < height; y++) {
@@ -40,7 +41,7 @@ export function majorityFilter(
       }
       let best = '', bestN = 0;
       for (const [id, n] of counts) { if (n > bestN) { best = id; bestN = n; } }
-      output[y][x].colorId = best;
+      if (bestN >= minMajority) output[y][x].colorId = best;
     }
   }
   return output;
