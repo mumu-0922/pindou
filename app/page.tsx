@@ -26,6 +26,26 @@ import BeadUsageList from '@/components/BeadUsageList';
 import ExportPanel from '@/components/ExportPanel';
 import { Button } from '@/components/ui/button';
 
+function dilateMask(mask: boolean[], width: number, height: number, radius: number): boolean[] {
+  const r = Math.max(1, Math.min(3, radius));
+  const out = mask.slice();
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!mask[y * width + x]) continue;
+      for (let dy = -r; dy <= r; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= height) continue;
+        for (let dx = -r; dx <= r; dx++) {
+          const nx = x + dx;
+          if (nx < 0 || nx >= width) continue;
+          out[ny * width + nx] = true;
+        }
+      }
+    }
+  }
+  return out;
+}
+
 export default function Home() {
   const { t, lang, setLang } = useI18n();
   const [dark, setDark] = useState(false);
@@ -143,9 +163,10 @@ export default function Home() {
       const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
 
       // 线稿掩码提取（仅 lowResOptimize）
-      const strokeMask = useLowResOptimize
-        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h)
+      const strokeCoreMask = useLowResOptimize
+        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 90, 0.12, 0)
         : undefined;
+      const strokeMask = strokeCoreMask ? dilateMask(strokeCoreMask, w, h, 1) : undefined;
 
       // Apply brightness/contrast/saturation + sharpening
       const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
@@ -182,13 +203,16 @@ export default function Home() {
 
       const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
 
-      // 描边覆盖：strokeMask=true 的格子强制设为调色板最暗色
-      if (strokeMask) {
-        let darkestId = pal[0].id, darkestLuma = Infinity;
-        for (const [id, l] of lumaMap) { if (l < darkestLuma) { darkestLuma = l; darkestId = id; } }
-        const darkest = pal.find(c => c.id === darkestId)!;
+      // 线稿格子：只在“确认为线稿”的格子里，把颜色重匹配到最暗的一小撮色里，避免整图被涂黑。
+      if (strokeCoreMask) {
+        const darkCandidates = [...pal]
+          .map(c => ({ c, l: lumaMap.get(c.id) ?? 255 }))
+          .sort((a, b) => a.l - b.l)
+          .slice(0, Math.min(10, pal.length))
+          .map(x => x.c);
         for (let i = 0; i < w * h; i++) {
-          if (strokeMask[i]) matched[i] = darkest;
+          if (!strokeCoreMask[i]) continue;
+          matched[i] = matchColor(adjusted[i], darkCandidates);
         }
       }
 

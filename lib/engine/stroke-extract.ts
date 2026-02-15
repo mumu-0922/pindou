@@ -8,9 +8,9 @@ export function extractStrokeMask(
   srcH: number,
   dstW: number,
   dstH: number,
-  lumaThreshold = 115,
-  coverageThreshold = 0.06,
-  dilateRadius = 1,
+  lumaThreshold = 90,
+  coverageThreshold = 0.12,
+  dilateRadius = 0,
 ): boolean[] {
   const mask: boolean[] = new Array(dstW * dstH);
   for (let dy = 0; dy < dstH; dy++) {
