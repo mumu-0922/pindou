@@ -126,9 +126,6 @@ function downscaleEdgeAware(
   const result: DownscaledPixel[] = new Array(dstW * dstH);
   const scaleX = srcW / dstW;
   const scaleY = srcH / dstH;
-  const weakEdgeThreshold = 18;
-  const strongEdgeThreshold = 56;
-  const tinyClusterRatio = 0.12;
 
   const luminanceAt = (x: number, y: number): number => {
     const i = (y * srcW + x) * 4;
@@ -147,126 +144,36 @@ function downscaleEdgeAware(
       const rx = Math.max(1, (sx1 - sx0) / 2);
       const ry = Math.max(1, (sy1 - sy0) / 2);
 
-      const lumSamples: number[] = [];
-      const linRSamples: number[] = [];
-      const linGSamples: number[] = [];
-      const linBSamples: number[] = [];
-      const centerWeights: number[] = [];
-      let lumSum = 0;
-      let lumMin = Number.POSITIVE_INFINITY;
-      let lumMax = Number.NEGATIVE_INFINITY;
+      let linR = 0;
+      let linG = 0;
+      let linB = 0;
+      let weightSum = 0;
 
       for (let sy = sy0; sy < sy1; sy++) {
         for (let sx = sx0; sx < sx1; sx++) {
           const i = (sy * srcW + sx) * 4;
           const lum = luminanceAt(sx, sy);
+          const rightLum = luminanceAt(Math.min(sx + 1, srcW - 1), sy);
+          const bottomLum = luminanceAt(sx, Math.min(sy + 1, srcH - 1));
+          const edgeStrength = (Math.abs(lum - rightLum) + Math.abs(lum - bottomLum)) / 255;
           const nx = (sx - cx) / rx;
           const ny = (sy - cy) / ry;
           const centerWeight = 1 + Math.max(0, 1 - (nx * nx + ny * ny)) * 0.35;
+          const edgeWeight = 1 + edgeStrength * 1.2;
+          const w = centerWeight * edgeWeight;
 
-          lumSamples.push(lum);
-          linRSamples.push(srgbToLinear(data[i]));
-          linGSamples.push(srgbToLinear(data[i + 1]));
-          linBSamples.push(srgbToLinear(data[i + 2]));
-          centerWeights.push(centerWeight);
-          lumSum += lum;
-          if (lum < lumMin) lumMin = lum;
-          if (lum > lumMax) lumMax = lum;
+          linR += srgbToLinear(data[i]) * w;
+          linG += srgbToLinear(data[i + 1]) * w;
+          linB += srgbToLinear(data[i + 2]) * w;
+          weightSum += w;
         }
       }
 
-      const sampleCount = lumSamples.length;
-      if (sampleCount === 0) {
-        result[dy * dstW + dx] = { r: 0, g: 0, b: 0 };
-        continue;
-      }
-
-      const lumRange = lumMax - lumMin;
-      if (sampleCount < 4 || lumRange < weakEdgeThreshold) {
-        let sumR = 0;
-        let sumG = 0;
-        let sumB = 0;
-        let sumW = 0;
-        for (let i = 0; i < sampleCount; i++) {
-          const w = centerWeights[i];
-          sumR += linRSamples[i] * w;
-          sumG += linGSamples[i] * w;
-          sumB += linBSamples[i] * w;
-          sumW += w;
-        }
-        const inv = sumW > 0 ? 1 / sumW : 0;
-        result[dy * dstW + dx] = {
-          r: linearToSrgb(sumR * inv),
-          g: linearToSrgb(sumG * inv),
-          b: linearToSrgb(sumB * inv),
-        };
-        continue;
-      }
-
-      const lumMean = lumSum / sampleCount;
-      const cluster = [
-        { count: 0, weight: 0, centerScore: 0, sumLum: 0, sumR: 0, sumG: 0, sumB: 0 },
-        { count: 0, weight: 0, centerScore: 0, sumLum: 0, sumR: 0, sumG: 0, sumB: 0 },
-      ];
-
-      for (let i = 0; i < sampleCount; i++) {
-        const lum = lumSamples[i];
-        const idx = lum <= lumMean ? 0 : 1;
-        const edgeBias = Math.abs(lum - lumMean) / Math.max(1, lumRange);
-        const w = centerWeights[i] * (1 + edgeBias * 0.35);
-        const target = cluster[idx];
-        target.count++;
-        target.weight += w;
-        target.centerScore += centerWeights[i];
-        target.sumLum += lum;
-        target.sumR += linRSamples[i] * w;
-        target.sumG += linGSamples[i] * w;
-        target.sumB += linBSamples[i] * w;
-      }
-
-      if (cluster[0].count === 0 || cluster[1].count === 0) {
-        const mono = cluster[0].count > 0 ? cluster[0] : cluster[1];
-        const inv = mono.weight > 0 ? 1 / mono.weight : 0;
-        result[dy * dstW + dx] = {
-          r: linearToSrgb(mono.sumR * inv),
-          g: linearToSrgb(mono.sumG * inv),
-          b: linearToSrgb(mono.sumB * inv),
-        };
-        continue;
-      }
-
-      const c0 = cluster[0];
-      const c1 = cluster[1];
-      const minorRatio = Math.min(c0.count, c1.count) / sampleCount;
-      const avgLum0 = c0.sumLum / c0.count;
-      const avgLum1 = c1.sumLum / c1.count;
-      const darkerIdx = avgLum0 <= avgLum1 ? 0 : 1;
-
-      let chosen = 0;
-      if (minorRatio < tinyClusterRatio) {
-        chosen = c0.count >= c1.count ? 0 : 1;
-        if (
-          lumRange >= strongEdgeThreshold &&
-          cluster[darkerIdx].centerScore >= cluster[chosen].centerScore * 0.6
-        ) {
-          chosen = darkerIdx;
-        }
-      } else {
-        chosen = c0.centerScore >= c1.centerScore ? 0 : 1;
-        if (
-          lumRange >= strongEdgeThreshold &&
-          Math.abs(c0.centerScore - c1.centerScore) < 0.35
-        ) {
-          chosen = darkerIdx;
-        }
-      }
-
-      const pick = cluster[chosen];
-      const inv = pick.weight > 0 ? 1 / pick.weight : 0;
+      const inv = weightSum > 0 ? 1 / weightSum : 0;
       result[dy * dstW + dx] = {
-        r: linearToSrgb(pick.sumR * inv),
-        g: linearToSrgb(pick.sumG * inv),
-        b: linearToSrgb(pick.sumB * inv),
+        r: linearToSrgb(linR * inv),
+        g: linearToSrgb(linG * inv),
+        b: linearToSrgb(linB * inv),
       };
     }
   }
