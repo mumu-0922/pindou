@@ -181,13 +181,13 @@ export default function Home() {
 
       const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
 
-      // 描边覆盖：strokeMask=true 且该格已偏暗时，强制设为调色板最暗色
+      // 描边覆盖：strokeMask=true 的格子强制设为调色板最暗色
       if (strokeMask) {
         let darkestId = pal[0].id, darkestLuma = Infinity;
         for (const [id, l] of lumaMap) { if (l < darkestLuma) { darkestLuma = l; darkestId = id; } }
         const darkest = pal.find(c => c.id === darkestId)!;
         for (let i = 0; i < w * h; i++) {
-          if (strokeMask[i] && (lumaMap.get(matched[i].id) ?? 255) < 120) matched[i] = darkest;
+          if (strokeMask[i]) matched[i] = darkest;
         }
       }
 
