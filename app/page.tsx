@@ -131,8 +131,8 @@ export default function Home() {
       if (myId !== genId.current) return;
       const isSmallPattern = w <= 40 && h <= 40;
       const useLowResOptimize = lowResOpt && isSmallPattern;
-      // Low-res patterns favor crisp, unblended blocks (closer to typical pixel-art workflows).
-      const effectivePixMode: PixelationMode = useLowResOptimize ? 'dominant' : pm;
+      // Low-res patterns: preserve outlines via contrast-aware edge mode.
+      const effectivePixMode: PixelationMode = useLowResOptimize ? 'edge-aware' : pm;
       const effectiveDithering: DitheringMode = useLowResOptimize ? 'none' : dith;
       const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(8, pal.length) : mc;
       const loaded = imageToPixels(img, bg);
