@@ -17,6 +17,35 @@ function neighbors4(row: number, col: number, width: number, height: number): Ar
   return result;
 }
 
+/** 3×3 多数滤波：每格取 8 邻域+自身出现最多的颜色替换，描边格跳过。 */
+export function majorityFilter(
+  cells: BeadCell[][],
+  width: number,
+  height: number,
+  strokeMask?: boolean[],
+): BeadCell[][] {
+  const output = cells.map(row => row.map(cell => ({ ...cell })));
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (strokeMask && strokeMask[y * width + x]) continue;
+      const counts = new Map<string, number>();
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const ny = y + dy, nx = x + dx;
+          if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+            const id = cells[ny][nx].colorId;
+            counts.set(id, (counts.get(id) ?? 0) + 1);
+          }
+        }
+      }
+      let best = '', bestN = 0;
+      for (const [id, n] of counts) { if (n > bestN) { best = id; bestN = n; } }
+      output[y][x].colorId = best;
+    }
+  }
+  return output;
+}
+
 export function removeIsolatedNoise(
   cells: BeadCell[][],
   width: number,
