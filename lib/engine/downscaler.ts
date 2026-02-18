@@ -128,8 +128,8 @@ function downscaleEdgeAware(
   const scaleY = srcH / dstH;
   const edgeMin = 0.25; // treat as edge when contrast is noticeable
   const edgeRatioMin = 0.045; // avoid turning flat areas into outlines
-  const edgeShareMin = 0.35; // require a dominant edge color
-  const edgeLumaDelta = 10; // only use edge color if meaningfully darker
+  const edgeShareMin = 0.55; // require a dominant edge color
+  const edgeLumaDelta = 18; // only use edge color if meaningfully darker
 
   const luminanceAt = (x: number, y: number): number => {
     const i = (y * srcW + x) * 4;
@@ -161,9 +161,6 @@ function downscaleEdgeAware(
       let edgeWeightTotal = 0;
       let edgePixels = 0;
       let sampleCount = 0;
-      // Track dark pixels for outline fallback
-      let darkSumR = 0, darkSumG = 0, darkSumB = 0, darkCount = 0;
-      const darkLumaThreshold = 80;
 
       for (let sy = sy0; sy < sy1; sy++) {
         for (let sx = sx0; sx < sx1; sx++) {
@@ -183,10 +180,6 @@ function downscaleEdgeAware(
           fillLinG += srgbToLinear(g) * centerWeight;
           fillLinB += srgbToLinear(b) * centerWeight;
           fillWeightTotal += centerWeight;
-
-          if (lum < darkLumaThreshold) {
-            darkSumR += r; darkSumG += g; darkSumB += b; darkCount++;
-          }
 
           if (edgeStrength >= edgeMin) {
             // Quantize to 6-bit per channel for stable bins (same as dominant mode).
@@ -240,18 +233,6 @@ function downscaleEdgeAware(
         const edgeLuma = 0.2126 * edgeR + 0.7152 * edgeG + 0.0722 * edgeB;
         if (edgeLuma <= fillLuma - edgeLumaDelta) {
           result[dy * dstW + dx] = { r: Math.round(edgeR), g: Math.round(edgeG), b: Math.round(edgeB) };
-          continue;
-        }
-      }
-
-      // Fallback: if dark pixels exist and are significantly darker than fill, use dark pixel average
-      if (darkCount > 0 && darkCount / sampleCount > 0.25) {
-        const dR = Math.round(darkSumR / darkCount);
-        const dG = Math.round(darkSumG / darkCount);
-        const dB = Math.round(darkSumB / darkCount);
-        const darkLuma = 0.2126 * dR + 0.7152 * dG + 0.0722 * dB;
-        if (darkLuma <= fillLuma - 80) {
-          result[dy * dstW + dx] = { r: dR, g: dG, b: dB };
           continue;
         }
       }

@@ -171,6 +171,19 @@ export default function Home() {
         pal = limitedPal;
       }
 
+      // Low-res optimize: remove muddy grays from palette so outlines snap to black/white
+      if (useLowResOptimize && pal.length > 2) {
+        const noGray = pal.filter(c => {
+          const luma = 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2];
+          const sat = Math.max(c.rgb[0], c.rgb[1], c.rgb[2]) - Math.min(c.rgb[0], c.rgb[1], c.rgb[2]);
+          return luma <= 50 || luma >= 220 || sat >= 30;
+        });
+        if (noGray.length >= 3) {
+          matched = matchColors(adjusted, noGray);
+          pal = noGray;
+        }
+      }
+
       if (myId !== genId.current) return;
       setPalette(pal);
 
