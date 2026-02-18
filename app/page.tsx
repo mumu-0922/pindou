@@ -179,7 +179,7 @@ export default function Home() {
 
       // Stroke recovery: only override GRAY cells that overlap with source outlines
       if (useLowResOptimize) {
-        const strokeMask = extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 70, 0.15, 0);
+        const strokeMask = extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 60, 0.20, 0);
         let darkestId = pal[0].id, darkestLuma = Infinity;
         for (const [id, l] of lumaMap) { if (l < darkestLuma) { darkestLuma = l; darkestId = id; } }
         const darkest = pal.find(c => c.id === darkestId)!;
@@ -188,8 +188,8 @@ export default function Home() {
           const c = matched[i];
           const sat = Math.max(c.rgb[0], c.rgb[1], c.rgb[2]) - Math.min(c.rgb[0], c.rgb[1], c.rgb[2]);
           const luma = lumaMap.get(c.id) ?? 255;
-          // Only override if matched color is a muddy gray (low saturation, mid luma)
-          if (sat < 40 && luma > 40 && luma < 200) {
+          // Only override if matched color is a muddy gray (very low saturation, mid luma)
+          if (sat < 25 && luma > 40 && luma < 200) {
             matched[i] = darkest;
           }
         }
