@@ -64,12 +64,18 @@ export function adjustPixels(
     const gray = 0.2126 * r + 0.7152 * g + 0.0722 * bl;
     // Suppress saturation boost for near-gray pixels to prevent
     // tiny color shifts (e.g. anti-aliasing artifacts) from being amplified.
+    // For high-luminance low-chroma pixels (anti-aliased edges near white),
+    // fully desaturate to eliminate blue/cyan halo artifacts.
     const maxDev = Math.max(Math.abs(r - gray), Math.abs(g - gray), Math.abs(bl - gray));
-    const es = maxDev < 3 ? 1 : s;
+    const isNearWhiteLowChroma = gray > 200 && maxDev < 15;
+    const es = isNearWhiteLowChroma ? Math.min(1, s) : s;
+    const dr = isNearWhiteLowChroma && maxDev < 8 ? 0 : (r - gray) * es;
+    const dg = isNearWhiteLowChroma && maxDev < 8 ? 0 : (g - gray) * es;
+    const db = isNearWhiteLowChroma && maxDev < 8 ? 0 : (bl - gray) * es;
     return {
-      r: clamp(gray + (r - gray) * es),
-      g: clamp(gray + (g - gray) * es),
-      b: clamp(gray + (bl - gray) * es),
+      r: clamp(gray + dr),
+      g: clamp(gray + dg),
+      b: clamp(gray + db),
     };
   });
 }
