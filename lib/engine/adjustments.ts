@@ -62,10 +62,14 @@ export function adjustPixels(
     g = (g - 128) * c + 128;
     bl = (bl - 128) * c + 128;
     const gray = 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+    // Suppress saturation boost for near-gray pixels to prevent
+    // tiny color shifts (e.g. anti-aliasing artifacts) from being amplified.
+    const maxDev = Math.max(Math.abs(r - gray), Math.abs(g - gray), Math.abs(bl - gray));
+    const es = maxDev < 3 ? 1 : s;
     return {
-      r: clamp(gray + (r - gray) * s),
-      g: clamp(gray + (g - gray) * s),
-      b: clamp(gray + (bl - gray) * s),
+      r: clamp(gray + (r - gray) * es),
+      g: clamp(gray + (g - gray) * es),
+      b: clamp(gray + (bl - gray) * es),
     };
   });
 }
