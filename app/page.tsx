@@ -139,7 +139,7 @@ export default function Home() {
         ? cropToSubject(loaded.data, loaded.width, loaded.height, { background: bg })
         : { data: loaded.data, width: loaded.width, height: loaded.height, cropped: false, offsetX: 0, offsetY: 0 };
       sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
-      const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode, useLowResOptimize ? { edgeLumaDelta: 10 } : undefined);
+      const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode, useLowResOptimize ? { edgeLumaDelta: 10, dominantFill: true } : undefined);
 
       // Apply brightness/contrast/saturation + sharpening
       const effectiveCon = useLowResOptimize ? Math.max(con, 20) : con;

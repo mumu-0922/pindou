@@ -19,6 +19,7 @@ export type PixelationMode = 'average' | 'dominant' | 'edge-aware';
 
 export interface EdgeAwareOptions {
   edgeLumaDelta?: number;
+  dominantFill?: boolean;
 }
 
 export function downscale(
@@ -136,6 +137,7 @@ function downscaleEdgeAware(
   const edgeRatioMin = 0.045; // avoid turning flat areas into outlines
   const edgeShareMin = 0.55; // require a dominant edge color
   const edgeLumaDelta = options?.edgeLumaDelta ?? 18; // only use edge color if meaningfully darker
+  const dominantFill = options?.dominantFill ?? false;
 
   const luminanceAt = (x: number, y: number): number => {
     const i = (y * srcW + x) * 4;
@@ -160,6 +162,11 @@ function downscaleEdgeAware(
       let fillLinG = 0;
       let fillLinB = 0;
       let fillWeightTotal = 0;
+
+      // Dominant color histogram (only when dominantFill enabled)
+      let domFreq: Map<number, { count: number; sumR: number; sumG: number; sumB: number }> | undefined;
+      let domBestKey = 0, domBestCount = 0;
+      if (dominantFill) domFreq = new Map();
 
       const edgeBins = new Map<number, { weight: number; sumR: number; sumG: number; sumB: number }>();
       let bestEdgeKey = 0;
@@ -186,6 +193,18 @@ function downscaleEdgeAware(
           fillLinG += srgbToLinear(g) * centerWeight;
           fillLinB += srgbToLinear(b) * centerWeight;
           fillWeightTotal += centerWeight;
+
+          if (domFreq) {
+            const dk = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
+            const de = domFreq.get(dk);
+            if (de) {
+              de.count++; de.sumR += r; de.sumG += g; de.sumB += b;
+              if (de.count > domBestCount) { domBestCount = de.count; domBestKey = dk; }
+            } else {
+              domFreq.set(dk, { count: 1, sumR: r, sumG: g, sumB: b });
+              if (1 > domBestCount) { domBestCount = 1; domBestKey = dk; }
+            }
+          }
 
           if (edgeStrength >= edgeMin) {
             // Quantize to 6-bit per channel for stable bins (same as dominant mode).
@@ -243,7 +262,21 @@ function downscaleEdgeAware(
         }
       }
 
-      result[dy * dstW + dx] = { r: fillR, g: fillG, b: fillB };
+      // When edgePixels > 0 but edge check failed, the linear average is a gray mix
+      // of outline + background. Use dominant color to pick the actual majority color.
+      if (domFreq && edgePixels > 0 && domBestCount > 0) {
+        const dom = domFreq.get(domBestKey)!;
+        result[dy * dstW + dx] = {
+          r: Math.round(dom.sumR / dom.count),
+          g: Math.round(dom.sumG / dom.count),
+          b: Math.round(dom.sumB / dom.count),
+        };
+      } else {
+        result[dy * dstW + dx] = { r: fillR, g: fillG, b: fillB };
+      }
+
+      // Reset dominant histogram for next cell
+      if (domFreq) { domFreq.clear(); domBestKey = 0; domBestCount = 0; }
     }
   }
 
