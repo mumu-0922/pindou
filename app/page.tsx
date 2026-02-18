@@ -9,7 +9,6 @@ import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
 import { adjustPixels, sharpenPixels, sharpenSource } from '@/lib/engine/adjustments';
 import { removeIsolatedNoise, majorityFilter } from '@/lib/engine/pattern-cleanup';
-import { extractStrokeMask } from '@/lib/engine/stroke-extract';
 import { cropToSubject } from '@/lib/engine/subject-crop';
 import { buildUsageMap, limitPaletteWithKeyColors, selectKeyColorIds } from '@/lib/engine/palette-limit';
 import { loadPalette } from '@/lib/data/palettes/loader';
@@ -142,11 +141,6 @@ export default function Home() {
       sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
       const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
 
-      // 线稿掩码提取（仅 lowResOptimize），阈值55+覆盖率30%精准捕获描边线条
-      const strokeMask = useLowResOptimize
-        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 55, 0.30, 0)
-        : undefined;
-
       // Apply brightness/contrast/saturation + sharpening
       const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
 
@@ -182,16 +176,6 @@ export default function Home() {
 
       const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
 
-      // 描边覆盖：strokeMask=true 的格子强制设为调色板最暗色
-      if (strokeMask) {
-        let darkestId = pal[0].id, darkestLuma = Infinity;
-        for (const [id, l] of lumaMap) { if (l < darkestLuma) { darkestLuma = l; darkestId = id; } }
-        const darkest = pal.find(c => c.id === darkestId)!;
-        for (let i = 0; i < w * h; i++) {
-          if (strokeMask[i]) matched[i] = darkest;
-        }
-      }
-
       const rawCells = Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
       );
@@ -199,7 +183,7 @@ export default function Home() {
         ? removeIsolatedNoise(rawCells, w, h, 2, protectedColorIds, lumaMap)
         : rawCells;
       const cells = useLowResOptimize
-        ? majorityFilter(noiseCleaned, w, h, strokeMask)
+        ? majorityFilter(noiseCleaned, w, h)
         : noiseCleaned;
 
       setPattern({
