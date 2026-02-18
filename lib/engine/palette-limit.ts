@@ -12,14 +12,17 @@ export function selectKeyColorIds(palette: CompiledBeadColor[], usage: Map<strin
   const used = palette.filter(color => (usage.get(color.id) ?? 0) > 0);
   if (used.length === 0) return new Set<string>();
 
+  const keys = new Set<string>();
+
+  // 最暗色和最亮色从整个调色板中选（确保描边色即使未被匹配到也被保护）
+  const byLuma = [...palette].sort((a, b) => luminance(a) - luminance(b));
+  keys.add(byLuma[0].id);
+  keys.add(byLuma[byLuma.length - 1].id);
+
+  // 最高饱和度色从 used 中选
   const minUsage = used.some(color => (usage.get(color.id) ?? 0) >= 2) ? 2 : 1;
   const stable = used.filter(color => (usage.get(color.id) ?? 0) >= minUsage);
   const pool = stable.length > 0 ? stable : used;
-  const keys = new Set<string>();
-
-  const byLuma = [...pool].sort((a, b) => luminance(a) - luminance(b));
-  keys.add(byLuma[0].id);
-  keys.add(byLuma[byLuma.length - 1].id);
 
   let bestSatColor: CompiledBeadColor | null = null;
   let bestSatScore = -1;
