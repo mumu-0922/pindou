@@ -194,7 +194,7 @@ function downscaleEdgeAware(
           fillLinB += srgbToLinear(b) * centerWeight;
           fillWeightTotal += centerWeight;
 
-          if (domFreq) {
+          if (domFreq && edgeStrength < edgeMin) {
             const dk = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
             const de = domFreq.get(dk);
             if (de) {
