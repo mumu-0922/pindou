@@ -245,12 +245,12 @@ function downscaleEdgeAware(
       }
 
       // Fallback: if dark pixels exist and are significantly darker than fill, use dark pixel average
-      if (darkCount > 0 && darkCount / sampleCount > 0.08) {
+      if (darkCount > 0 && darkCount / sampleCount > 0.25) {
         const dR = Math.round(darkSumR / darkCount);
         const dG = Math.round(darkSumG / darkCount);
         const dB = Math.round(darkSumB / darkCount);
         const darkLuma = 0.2126 * dR + 0.7152 * dG + 0.0722 * dB;
-        if (darkLuma <= fillLuma - 60) {
+        if (darkLuma <= fillLuma - 80) {
           result[dy * dstW + dx] = { r: dR, g: dG, b: dB };
           continue;
         }
