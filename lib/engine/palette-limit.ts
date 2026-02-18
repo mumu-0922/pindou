@@ -70,13 +70,21 @@ export function limitPaletteWithKeyColors(
   for (const id of protectedIds) selected.add(id);
 
   while (selected.size > maxColors) {
+    // Prefer removing muddy grays (low saturation, mid luma) first
     let removeId: string | null = null;
-    let minCount = Infinity;
+    let worstScore = Infinity;
     for (const id of selected) {
       if (protectedIds.has(id)) continue;
+      const color = palette.find(c => c.id === id);
+      if (!color) continue;
       const count = usage.get(id) ?? 0;
-      if (count < minCount) {
-        minCount = count;
+      const sat = saturation(color);
+      const luma = luminance(color);
+      const isGray = sat < 30 && luma > 50 && luma < 220;
+      // Gray colors get a penalty (lower score = removed first)
+      const score = count + (isGray ? 0 : 10000);
+      if (score < worstScore) {
+        worstScore = score;
         removeId = id;
       }
     }
