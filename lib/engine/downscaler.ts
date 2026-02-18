@@ -17,16 +17,21 @@ export interface DownscaledPixel {
 
 export type PixelationMode = 'average' | 'dominant' | 'edge-aware';
 
+export interface EdgeAwareOptions {
+  edgeLumaDelta?: number;
+}
+
 export function downscale(
   data: Uint8ClampedArray,
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number,
-  mode: PixelationMode = 'average'
+  mode: PixelationMode = 'average',
+  edgeOptions?: EdgeAwareOptions
 ): DownscaledPixel[] {
   if (mode === 'dominant') return downscaleDominant(data, srcW, srcH, dstW, dstH);
-  if (mode === 'edge-aware') return downscaleEdgeAware(data, srcW, srcH, dstW, dstH);
+  if (mode === 'edge-aware') return downscaleEdgeAware(data, srcW, srcH, dstW, dstH, edgeOptions);
   return downscaleAverage(data, srcW, srcH, dstW, dstH);
 }
 
@@ -121,7 +126,8 @@ function downscaleEdgeAware(
   srcW: number,
   srcH: number,
   dstW: number,
-  dstH: number
+  dstH: number,
+  options?: EdgeAwareOptions
 ): DownscaledPixel[] {
   const result: DownscaledPixel[] = new Array(dstW * dstH);
   const scaleX = srcW / dstW;
@@ -129,7 +135,7 @@ function downscaleEdgeAware(
   const edgeMin = 0.25; // treat as edge when contrast is noticeable
   const edgeRatioMin = 0.045; // avoid turning flat areas into outlines
   const edgeShareMin = 0.55; // require a dominant edge color
-  const edgeLumaDelta = 18; // only use edge color if meaningfully darker
+  const edgeLumaDelta = options?.edgeLumaDelta ?? 18; // only use edge color if meaningfully darker
 
   const luminanceAt = (x: number, y: number): number => {
     const i = (y * srcW + x) * 4;

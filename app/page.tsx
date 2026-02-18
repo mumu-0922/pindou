@@ -133,16 +133,18 @@ export default function Home() {
       // Low-res patterns: preserve outlines via contrast-aware edge mode.
       const effectivePixMode: PixelationMode = useLowResOptimize ? 'edge-aware' : pm;
       const effectiveDithering: DitheringMode = useLowResOptimize ? 'none' : dith;
-      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(8, pal.length) : mc;
+      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(6, pal.length) : mc;
       const loaded = imageToPixels(img, bg);
       const prepared = useLowResOptimize
         ? cropToSubject(loaded.data, loaded.width, loaded.height, { background: bg })
         : { data: loaded.data, width: loaded.width, height: loaded.height, cropped: false, offsetX: 0, offsetY: 0 };
       sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
-      const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
+      const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode, useLowResOptimize ? { edgeLumaDelta: 10 } : undefined);
 
       // Apply brightness/contrast/saturation + sharpening
-      const adjusted = sharpenPixels(adjustPixels(pixels, bri, con, sat), w, h, sharp);
+      const effectiveCon = useLowResOptimize ? Math.max(con, 20) : con;
+      const effectiveSat = useLowResOptimize ? Math.max(sat, 15) : sat;
+      const adjusted = sharpenPixels(adjustPixels(pixels, bri, effectiveCon, effectiveSat), w, h, sharp);
 
       const matchFn = (p: { r: number; g: number; b: number }) => {
         const c = matchColor(p, pal);
