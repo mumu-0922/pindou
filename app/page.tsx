@@ -142,9 +142,9 @@ export default function Home() {
       sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
       const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
 
-      // 线稿掩码提取（仅 lowResOptimize），阈值70捕获深棕/黑色描边
+      // 线稿掩码提取（仅 lowResOptimize），阈值55+覆盖率30%精准捕获描边线条
       const strokeMask = useLowResOptimize
-        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 70, 0.15, 0)
+        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 55, 0.30, 0)
         : undefined;
 
       // Apply brightness/contrast/saturation + sharpening
