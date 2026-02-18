@@ -128,8 +128,8 @@ function downscaleEdgeAware(
   const scaleY = srcH / dstH;
   const edgeMin = 0.25; // treat as edge when contrast is noticeable
   const edgeRatioMin = 0.045; // avoid turning flat areas into outlines
-  const edgeShareMin = 0.55; // require a dominant edge color
-  const edgeLumaDelta = 18; // only use edge color if meaningfully darker
+  const edgeShareMin = 0.35; // require a dominant edge color
+  const edgeLumaDelta = 10; // only use edge color if meaningfully darker
 
   const luminanceAt = (x: number, y: number): number => {
     const i = (y * srcW + x) * 4;
