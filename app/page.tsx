@@ -142,9 +142,9 @@ export default function Home() {
       sharpenSource(prepared.data, prepared.width, prepared.height, sharp);
       const pixels = downscale(prepared.data, prepared.width, prepared.height, w, h, effectivePixMode);
 
-      // 线稿掩码提取（仅 lowResOptimize），阈值50只捕获真正的黑/深棕描边
+      // 线稿掩码提取（仅 lowResOptimize），阈值70捕获深棕/黑色描边
       const strokeMask = useLowResOptimize
-        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 50, 0.20, 0)
+        ? extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 70, 0.15, 0)
         : undefined;
 
       // Apply brightness/contrast/saturation + sharpening
@@ -196,7 +196,7 @@ export default function Home() {
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
       );
       const noiseCleaned = useLowResOptimize
-        ? removeIsolatedNoise(rawCells, w, h, 2, protectedColorIds, lumaMap, strokeMask)
+        ? removeIsolatedNoise(rawCells, w, h, 2, protectedColorIds, lumaMap)
         : rawCells;
       const cells = useLowResOptimize
         ? majorityFilter(noiseCleaned, w, h, strokeMask)
