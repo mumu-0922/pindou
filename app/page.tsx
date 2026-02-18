@@ -128,12 +128,12 @@ export default function Home() {
       // For low-resolution patterns, crop subject first and protect key colors during palette limiting.
       const img = await loadImage(file);
       if (myId !== genId.current) return;
-      const isSmallPattern = w <= 40 && h <= 40;
+      const isSmallPattern = w <= 58 && h <= 58;
       const useLowResOptimize = lowResOpt && isSmallPattern;
       // Low-res patterns: preserve outlines via contrast-aware edge mode.
       const effectivePixMode: PixelationMode = useLowResOptimize ? 'edge-aware' : pm;
       const effectiveDithering: DitheringMode = useLowResOptimize ? 'none' : dith;
-      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(6, pal.length) : mc;
+      const effectiveMaxColors = useLowResOptimize && mc === 0 ? Math.min(w <= 40 && h <= 40 ? 6 : 12, pal.length) : mc;
       const loaded = imageToPixels(img, bg);
       const prepared = useLowResOptimize
         ? cropToSubject(loaded.data, loaded.width, loaded.height, { background: bg })
