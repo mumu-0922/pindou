@@ -9,7 +9,6 @@ import { matchColor, matchColors } from '@/lib/engine/color-matcher';
 import { applyDithering } from '@/lib/engine/dithering';
 import { adjustPixels, sharpenPixels, sharpenSource } from '@/lib/engine/adjustments';
 import { removeIsolatedNoise, majorityFilter } from '@/lib/engine/pattern-cleanup';
-import { extractStrokeMask } from '@/lib/engine/stroke-extract';
 import { cropToSubject } from '@/lib/engine/subject-crop';
 import { buildUsageMap, limitPaletteWithKeyColors, selectKeyColorIds } from '@/lib/engine/palette-limit';
 import { loadPalette } from '@/lib/data/palettes/loader';
@@ -176,24 +175,6 @@ export default function Home() {
       setPalette(pal);
 
       const lumaMap = new Map(pal.map(c => [c.id, 0.2126 * c.rgb[0] + 0.7152 * c.rgb[1] + 0.0722 * c.rgb[2]]));
-
-      // Stroke recovery: only override GRAY cells that overlap with source outlines
-      if (useLowResOptimize) {
-        const strokeMask = extractStrokeMask(prepared.data, prepared.width, prepared.height, w, h, 60, 0.20, 0);
-        let darkestId = pal[0].id, darkestLuma = Infinity;
-        for (const [id, l] of lumaMap) { if (l < darkestLuma) { darkestLuma = l; darkestId = id; } }
-        const darkest = pal.find(c => c.id === darkestId)!;
-        for (let i = 0; i < w * h; i++) {
-          if (!strokeMask[i]) continue;
-          const c = matched[i];
-          const sat = Math.max(c.rgb[0], c.rgb[1], c.rgb[2]) - Math.min(c.rgb[0], c.rgb[1], c.rgb[2]);
-          const luma = lumaMap.get(c.id) ?? 255;
-          // Only override if matched color is a muddy gray (very low saturation, mid luma)
-          if (sat < 25 && luma > 40 && luma < 200) {
-            matched[i] = darkest;
-          }
-        }
-      }
 
       const rawCells = Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => ({ colorId: matched[y * w + x].id }))
